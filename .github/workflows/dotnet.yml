@@ -22,9 +22,9 @@ jobs:
     - name: Build
       run: dotnet build --configuration Release --no-restore
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet test --no-build --configuration Release --verbosity normal
     - name: Pack
-      run: dotnet pack --no-build --configuration release --output nupkgs
+      run: dotnet pack --no-build --configuration Release --output nupkgs
     - name: Publish
       run: dotnet nuget push *.nupkg --source https://api.nuget.org/v3/index.json --api-key ${NUGET_API_KEY}
       working-directory: nupkgs
