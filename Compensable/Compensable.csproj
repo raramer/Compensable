@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+	  <Authors>Richard Ramer</Authors>
+	  <PackageId>Compensable</PackageId>
+	  <Description>A library to facilitate the compensating (rolling back) of a series of successfully completed actions when an exception occurs.</Description>
+	  <PackageProjectUrl>https://github.com/raramer/Compensable</PackageProjectUrl>
+	  <PackageLicenseExpression>MIT</PackageLicenseExpression>
+	  <Version>0.0.0-alpha-1</Version>
+  </PropertyGroup>
+
+</Project>
