@@ -6,7 +6,7 @@ namespace Compensable.Tests
     public class Tests
     {
         [Fact]
-        public async Task Initialized()
+        public void Initialized()
         {
             // arrange
             var compensator = new Compensator();
@@ -211,7 +211,7 @@ namespace Compensable.Tests
             var gotException = await Assert.ThrowsAsync<CompensationException>(async () => await compensator.DoAsync(doer2.ExecuteAsync, doer2.CompensateAsync).ConfigureAwait(false)).ConfigureAwait(false);
 
             // assert
-            Assert.Equal($"While executing: {executionException.Message}\r\nWhile compensating: {compensationException.Message}", gotException.Message);
+            Assert.Equal($"While executing: {executionException.Message}{Environment.NewLine}While compensating: {compensationException.Message}", gotException.Message);
             Assert.Equal(compensationException.Message, gotException.WhileCompensating.Message);
             Assert.Equal(executionException.Message, gotException.WhileExecuting.Message);
 
@@ -314,7 +314,7 @@ namespace Compensable.Tests
             var gotException = await Assert.ThrowsAsync<CompensationException>(async () => await compensator.DoIfAsync(test3, doer3.ExecuteAsync, doer3.CompensateAsync).ConfigureAwait(false)).ConfigureAwait(false);
 
             // assert
-            Assert.Equal($"While executing: {executionException.Message}\r\nWhile compensating: {compensationException.Message}", gotException.Message);
+            Assert.Equal($"While executing: {executionException.Message}{Environment.NewLine}While compensating: {compensationException.Message}", gotException.Message);
             Assert.Equal(compensationException.Message, gotException.WhileCompensating.Message);
             Assert.Equal(executionException.Message, gotException.WhileExecuting.Message);
 
@@ -371,7 +371,7 @@ namespace Compensable.Tests
             var gotException = await Assert.ThrowsAsync<CompensationException>(async () => await compensator.DoAsync(getter2.ExecuteAsync).ConfigureAwait(false)).ConfigureAwait(false);
 
             // assert
-            Assert.Equal($"While executing: {executionException.Message}\r\nWhile compensating: {compensationException.Message}", gotException.Message);
+            Assert.Equal($"While executing: {executionException.Message}{Environment.NewLine}While compensating: {compensationException.Message}", gotException.Message);
             Assert.Equal(compensationException.Message, gotException.WhileCompensating.Message);
             Assert.Equal(executionException.Message, gotException.WhileExecuting.Message);
 
@@ -387,9 +387,9 @@ namespace Compensable.Tests
         { 
             public long? CompensationCalledAt { get; protected set; }
             public bool CompensationCalled { get; protected set; }
-            public Exception CompensationException { get; init; }
+            public Exception? CompensationException { get; init; }
             public bool ExecutionCalled { get; protected set; }
-            public Exception ExecutionException { get; init; }
+            public Exception? ExecutionException { get; init; }
         }
 
         private class Doer : Tester
