@@ -5,31 +5,37 @@ namespace Compensable
 {
 	partial class Compensator
 	{
-		public async Task<TResult> GetAsync<TResult>(Func<Task<TResult>> execution, Func<TResult, Task> compensation)
+        public async Task<TResult> GetAsync<TResult>(Func<Task<TResult>> execution, Func<TResult, Task> compensation, Tag compensateAtTag)
 		{
-			VerifyStatusIsExecuting();
+			ValidateStatusIsExecuting();
 
 			try
 			{
 				if (execution == null)
-					throw new ArgumentException($"{nameof(execution)} is required.");
+					throw new ArgumentNullException(nameof(execution));
 
-				await _executionLock.WaitAsync().ConfigureAwait(false);
+                ValidateTag(compensateAtTag);
+
+                await _executionLock.WaitAsync().ConfigureAwait(false);
 
 				try
 				{
-					VerifyStatusIsExecuting();
+					ValidateStatusIsExecuting();
 
 					var result = await execution().ConfigureAwait(false);
 
 					if (compensation != null)
-						_compensations.Add(async () => await compensation(result).ConfigureAwait(false));
+                    {
+                        var compensateAtIndex = GetCompensateAtIndex(compensateAtTag);
+                        _compensations.Insert(compensateAtIndex, (async () => await compensation(result).ConfigureAwait(false), null));
+                    }
 
 					return result;
 				}
 				finally
 				{
-					_executionLock.Release();
+                    // TODO if an exception occurs, we will compensate but there's no lock between this finally and the outer catch
+                    _executionLock.Release();
 				}
 			}
 			catch (Exception whileExecuting)
@@ -39,28 +45,63 @@ namespace Compensable
 			}
 		}
 
-		public async Task<TResult> GetAsync<TResult>(Func<TResult> execution)
-			=> await GetAsync(execution.Awaitable(), default(Func<TResult, Task>)).ConfigureAwait(false);
+        #region One-Parameter Overloads
+        public async Task<TResult> GetAsync<TResult>(Func<TResult> execution)
+			=> await GetAsync(execution.Awaitable(), default(Func<TResult, Task>), default(Tag)).ConfigureAwait(false);
 
+        public async Task<TResult> GetAsync<TResult>(Func<Task<TResult>> execution)
+            => await GetAsync(execution, default(Func<TResult, Task>), default(Tag)).ConfigureAwait(false);
+        #endregion
+
+        #region Two-Parameter Overloads
         public async Task<TResult> GetAsync<TResult>(Func<TResult> execution, Action compensation)
-            => await GetAsync(execution.Awaitable(), compensation.AwaitableIgnore<TResult>()).ConfigureAwait(false);
+            => await GetAsync(execution.Awaitable(), compensation.AwaitableIgnore<TResult>(), default(Tag)).ConfigureAwait(false);
 
         public async Task<TResult> GetAsync<TResult>(Func<TResult> execution, Action<TResult> compensation)
-			=> await GetAsync(execution.Awaitable(), compensation.Awaitable()).ConfigureAwait(false);
+            => await GetAsync(execution.Awaitable(), compensation.Awaitable(), default(Tag)).ConfigureAwait(false);
 
         public async Task<TResult> GetAsync<TResult>(Func<TResult> execution, Func<Task> compensation)
-            => await GetAsync(execution.Awaitable(), compensation.Ignore<TResult>()).ConfigureAwait(false);
-        
-		public async Task<TResult> GetAsync<TResult>(Func<TResult> execution, Func<TResult, Task> compensation)
-			=> await GetAsync(execution.Awaitable(), compensation).ConfigureAwait(false);
+            => await GetAsync(execution.Awaitable(), compensation.Ignore<TResult>(), default(Tag)).ConfigureAwait(false);
 
-		public async Task<TResult> GetAsync<TResult>(Func<Task<TResult>> execution)
-			=> await GetAsync(execution, default(Func<TResult, Task>)).ConfigureAwait(false);
+        public async Task<TResult> GetAsync<TResult>(Func<TResult> execution, Func<TResult, Task> compensation)
+            => await GetAsync(execution.Awaitable(), compensation, default(Tag)).ConfigureAwait(false);
+
 
         public async Task<TResult> GetAsync<TResult>(Func<Task<TResult>> execution, Action compensation)
-            => await GetAsync(execution, compensation.AwaitableIgnore<TResult>()).ConfigureAwait(false);
-    
-		public async Task<TResult> GetAsync<TResult>(Func<Task<TResult>> execution, Action<TResult> compensation)
-        => await GetAsync(execution, compensation.Awaitable()).ConfigureAwait(false);
+            => await GetAsync(execution, compensation.AwaitableIgnore<TResult>(), default(Tag)).ConfigureAwait(false);
+
+        public async Task<TResult> GetAsync<TResult>(Func<Task<TResult>> execution, Action<TResult> compensation)
+            => await GetAsync(execution, compensation.Awaitable(), default(Tag)).ConfigureAwait(false);
+
+        public async Task<TResult> GetAsync<TResult>(Func<Task<TResult>> execution, Func<Task> compensation)
+            => await GetAsync(execution, compensation.Ignore<TResult>(), default(Tag)).ConfigureAwait(false);
+
+        public async Task<TResult> GetAsync<TResult>(Func<Task<TResult>> execution, Func<TResult, Task> compensation)
+            => await GetAsync(execution, compensation, default(Tag)).ConfigureAwait(false);
+        #endregion
+
+        #region Three-Parameter Overloads
+        public async Task<TResult> GetAsync<TResult>(Func<TResult> execution, Action compensation, Tag tag)
+            => await GetAsync(execution.Awaitable(), compensation.AwaitableIgnore<TResult>(), tag).ConfigureAwait(false);
+
+        public async Task<TResult> GetAsync<TResult>(Func<TResult> execution, Action<TResult> compensation, Tag tag)
+            => await GetAsync(execution.Awaitable(), compensation.Awaitable(), tag).ConfigureAwait(false);
+
+        public async Task<TResult> GetAsync<TResult>(Func<TResult> execution, Func<Task> compensation, Tag tag)
+            => await GetAsync(execution.Awaitable(), compensation.Ignore<TResult>(), tag).ConfigureAwait(false);
+
+        public async Task<TResult> GetAsync<TResult>(Func<TResult> execution, Func<TResult, Task> compensation, Tag tag)
+            => await GetAsync(execution.Awaitable(), compensation, tag).ConfigureAwait(false);
+
+
+        public async Task<TResult> GetAsync<TResult>(Func<Task<TResult>> execution, Action compensation, Tag tag)
+            => await GetAsync(execution, compensation.AwaitableIgnore<TResult>(), tag).ConfigureAwait(false);
+
+        public async Task<TResult> GetAsync<TResult>(Func<Task<TResult>> execution, Action<TResult> compensation, Tag tag)
+            => await GetAsync(execution, compensation.Awaitable(), tag).ConfigureAwait(false);
+
+        public async Task<TResult> GetAsync<TResult>(Func<Task<TResult>> execution, Func<Task> compensation, Tag tag)
+            => await GetAsync(execution, compensation.Ignore<TResult>(), tag).ConfigureAwait(false);
+        #endregion
     }
 }

@@ -7,10 +7,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compensable", "Compensable\
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FED50484-A80E-4F63-A672-78BA2E48AD01}"
 	ProjectSection(SolutionItems) = preProject
+		global.json = global.json
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compensable.Tests", "Compensable.Tests\Compensable.Tests.csproj", "{8C2455E6-D7B0-4710-AFF1-253A7A3BEE8F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compensable.Tests", "Compensable.Tests\Compensable.Tests.csproj", "{8C2455E6-D7B0-4710-AFF1-253A7A3BEE8F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
