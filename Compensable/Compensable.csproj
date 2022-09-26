@@ -4,11 +4,11 @@
     <TargetFramework>netstandard2.0</TargetFramework>
 	  <Authors>Richard Ramer</Authors>
 	  <PackageId>Compensable</PackageId>
-	  <Description>A library to facilitate the compensating (rolling back) of a series of successfully completed actions when an exception occurs.</Description>
+	  <Description>A library to facilitate the compensating (rolling back) of a series of successfully completed workflow steps when an exception occurs.</Description>
 	  <PackageProjectUrl>https://github.com/raramer/Compensable</PackageProjectUrl>
 	  <PackageLicenseExpression>MIT</PackageLicenseExpression>
-	  <PackageTags>compensate;rollback;roll back;netstandard2</PackageTags>
-	  <Version>0.1.0-beta-1</Version>
+	  <PackageTags>compensable;compensate;rollback;roll back;netstandard2</PackageTags>
+	  <Version>0.1.1-beta-1</Version>
   </PropertyGroup>
 
 </Project>

@@ -4,7 +4,7 @@ namespace Compensable
 {
     public sealed class Tag
     {
-        public string Label { get; }
+        internal string Label { get; }
 
         internal Tag() : this(null)
         {

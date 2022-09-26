@@ -10,7 +10,7 @@ namespace Compensable
         /// </summary>
         /// <param name="label">A label to view while debugging; there is no guarantee of uniqueness.  If null, a random value will be generated</param>
         /// <returns>A new Tag with the specified label.</returns>
-        public async Task<Tag> CreateTagAsync(string label)
+        internal async Task<Tag> CreateTagAsync(string label)
         {
             ValidateStatusIsExecuting();
 
