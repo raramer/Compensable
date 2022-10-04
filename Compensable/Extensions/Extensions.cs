@@ -26,13 +26,6 @@ namespace Compensable
                 : () => Task.FromResult(function());
         }
 
-        //internal static Func<T1, Task<TResult>> Awaitable<T1, TResult>(this Func<T1, TResult> function)
-        //{
-        //    return function == null
-        //        ? default(Func<T1, Task<TResult>>)
-        //        : (t1) => Task.FromResult(function(t1));
-        //}
-
         internal static Func<T1, Task> AwaitableIgnore<T1>(this Action action)
         {
             return action == null

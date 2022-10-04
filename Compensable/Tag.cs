@@ -10,7 +10,7 @@ namespace Compensable
         {
         }
         internal Tag(string label)
-        { 
+        {
             Label = string.IsNullOrWhiteSpace(label)
                 ? Guid.NewGuid().ToString("n")
                 : label.Trim();
