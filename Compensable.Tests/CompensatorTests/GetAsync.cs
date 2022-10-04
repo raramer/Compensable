@@ -37,7 +37,7 @@ public class GetAsync : TestBase
         var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
 
         var getHelper = new GetHelper();
-        Func<Task> compensation = null;
+        Func<Task>? compensation = null;
 
         // act
         var gotResult = await compensator.GetAsync(getHelper.ExecuteAsync, compensation, tag).ConfigureAwait(false);
@@ -106,7 +106,7 @@ public class GetAsync : TestBase
         var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
 
         var getHelper = new GetHelper(expectExecutionToBeCalled: false);
-        Func<Task> execution = null;
+        Func<Task>? execution = null;
 
         // act
         var exception = await Assert.ThrowsAsync<ArgumentNullException>(async () =>

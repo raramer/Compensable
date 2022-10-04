@@ -42,7 +42,7 @@ public class ForeachAsync : TestBase
         var foreachHelper = new ForeachHelper(
             new ItemHelper(),
             new ItemHelper());
-        Func<object, Task> compensation = null;
+        Func<object, Task>? compensation = null;
 
         // act
         await compensator.ForeachAsync(foreachHelper.Items, foreachHelper.ExecuteAsync, compensation, tag).ConfigureAwait(false);
@@ -110,7 +110,7 @@ public class ForeachAsync : TestBase
         var foreachHelper = new ForeachHelper(
             new ItemHelper(expectItemToBeCalled: false),
             new ItemHelper(expectItemToBeCalled: false));
-        Func<object, Task> execution = null;
+        Func<object, Task>? execution = null;
 
         // act
         var exception = await Assert.ThrowsAsync<ArgumentNullException>(async () =>
@@ -326,7 +326,7 @@ public class ForeachAsync : TestBase
         var foreachHelper = new ForeachHelper(
             new ItemHelper(expectItemToBeCalled: false),
             new ItemHelper(expectItemToBeCalled: false));
-        IEnumerable<object> items = null;
+        IEnumerable<object>? items = null;
 
         // act
         var exception = await Assert.ThrowsAsync<ArgumentNullException>(async () =>

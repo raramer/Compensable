@@ -59,7 +59,7 @@ namespace Compensable
             return tag;
         }
 
-        private async Task ClearCompensationsAsync()
+        private void ClearCompensations()
         {
             // TODO do we need to acquire compensation lock as an additional safeguard?
             _taggedCompensations.Clear();

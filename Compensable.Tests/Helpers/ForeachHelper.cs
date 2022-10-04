@@ -16,7 +16,7 @@ public class ForeachHelper : HelperBase
     public ForeachHelper(params ItemHelper[] itemHelpers) : this(null, itemHelpers)
     {
     }
-    public ForeachHelper(string label, params ItemHelper[] itemHelpers) : base(label)
+    public ForeachHelper(string? label, params ItemHelper[] itemHelpers) : base(label)
     {
         _itemHelpers = itemHelpers;
     }

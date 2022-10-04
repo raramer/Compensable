@@ -37,7 +37,7 @@ public class DoIfAsync : TestBase
         var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
 
         var doIfHelper = new DoIfHelper(true);
-        Func<Task> compensation = null;
+        Func<Task>? compensation = null;
 
         // act
         await compensator.DoIfAsync(doIfHelper.TestAsync, doIfHelper.ExecuteAsync, compensation, tag).ConfigureAwait(false);
@@ -102,7 +102,7 @@ public class DoIfAsync : TestBase
         var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
 
         var doIfHelper = new DoIfHelper(testResult: true, expectTestToBeCalled: false);
-        Func<Task> execution = null;
+        Func<Task>? execution = null;
 
         // act
         var exception = await Assert.ThrowsAsync<ArgumentNullException>(async () =>
@@ -305,7 +305,7 @@ public class DoIfAsync : TestBase
         var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
 
         var doIfHelper = new DoIfHelper(testResult: true, expectTestToBeCalled: false);
-        Func<Task<bool>> test = null;
+        Func<Task<bool>>? test = null;
 
         // act
         var exception = await Assert.ThrowsAsync<ArgumentNullException>(async () =>

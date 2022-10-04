@@ -5,22 +5,6 @@ namespace Compensable.Tests.CompensationExceptionTests;
 public class CompensationExceptionTests
 {
     [Fact]
-    public void SerializedAndDeserialized()
-    {
-        // arrange
-        var whileCompensating = new HelperCompensationException();
-        var whileExecuting = new HelperExecutionException();
-        var compensationException = new CompensationException(whileCompensating, whileExecuting).ThrowAndCatch();
-
-        // act
-        var serializedAndDeserializedException = compensationException.SerializeAndDeserialize();
-
-        // assert
-        Assert.NotNull(serializedAndDeserializedException);
-        Assert.Equal(compensationException.ToString(), serializedAndDeserializedException.ToString());
-    }
-
-    [Fact]
     public void WhileCompensatingIsNullAndWhileExecutingIsNull()
     {
         // arrange
@@ -32,7 +16,7 @@ public class CompensationExceptionTests
 
         // assert
         Assert.NotNull(compensationException);
-        Assert.Equal(ExpectedMessages.WhileCompensating(whileCompensatingMessage: null), compensationException.Message);
+        Assert.Equal(ExpectedMessages.WhileCompensating(string.Empty), compensationException.Message);
         Assert.Equal(whileCompensating, compensationException.InnerException);
         Assert.Equal(whileCompensating, compensationException.WhileCompensating);
         Assert.Null(compensationException.WhileExecuting);
@@ -50,7 +34,7 @@ public class CompensationExceptionTests
 
         // assert
         Assert.NotNull(compensationException);
-        Assert.Equal(ExpectedMessages.WhileExecutingWhileCompensating(whileCompensatingMessage: null), compensationException.Message);
+        Assert.Equal(ExpectedMessages.WhileExecutingWhileCompensating(whileCompensatingMessage: string.Empty), compensationException.Message);
         Assert.Equal(whileExecuting, compensationException.InnerException);
         Assert.Equal(whileCompensating, compensationException.WhileCompensating);
         Assert.Equal(whileExecuting, compensationException.WhileExecuting);

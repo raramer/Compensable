@@ -17,7 +17,7 @@ namespace Compensable
                 {
                     VerifyCanExecute();
 
-                    await ClearCompensationsAsync().ConfigureAwait(false);
+                    ClearCompensations();
                 }
                 catch
                 {

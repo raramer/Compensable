@@ -27,7 +27,7 @@ public class Status : TestBase
     }
 
     [Fact]
-    public async Task CompensatorIsExecuting()
+    public void CompensatorIsExecuting()
     {
         // arrange
         var compensator = new Compensator();

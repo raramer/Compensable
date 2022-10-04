@@ -2,7 +2,7 @@
 
 A library to facilitate the compensating (rolling back) of a series of successfully completed workflow steps when an exception occurs.
 
-### Where do I get it
+## Where do I get it
 
 Compensable can be installed using the Nuget package manager 
 
@@ -16,7 +16,7 @@ or the dotnet CLI.
 dotnet add package Compensable
 ```
 
-### How to get started
+## How to get started
 1. Define a compensator
 
    ```csharp
@@ -99,7 +99,7 @@ dotnet add package Compensable
      var tag = await compensator.CreateTagAsync();
      ```
 
-### Status
+## Status
 
 The compensator exposes a `Status` property that can be used to inspect its current internal state.  
 
@@ -115,7 +115,7 @@ If the Status is anything other than `Executing`, it cannot be used for executin
 
    * `FailedToCompensate` - the compensator failed to compensate a step in the stack.
   
-### Tags
+## Tags
 
 Tags define a position in the compensation stack with an optional label. They do nothing unless a step defines a `compensation` that should `compensateAtTag`.  When that happens the compensation is pushed into the compensation stack at the position of the tag.  More than one step can reference the same tag, but they are added in order that they are called.  
 
@@ -138,11 +138,11 @@ _Tags should be used sparingly!_
        async () => await step3Async());
 ```
 
-### Multi-threading
+## Multi-threading
 
 The compensator is intended to be single-threaded in order to better guarantee an order of operations, however it is intended to be thread safe.
 
-### Practical Example
+## Practical Example
 This example creates an email service on an async remote platform and stores a reference to it in a non-async local account service repository.  A tag is used alter the compensation stack to delete the entry from the local repository last.  If the compensation call to delete the service from the remote platform fails, the `emailService.Id` will still be available in the local repository for manual cleanup.
 
    ```csharp

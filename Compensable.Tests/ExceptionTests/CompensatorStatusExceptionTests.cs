@@ -73,19 +73,4 @@ public class CompensatorStatusExceptionTests
         Assert.NotNull(compensatorStatusException);
         Assert.Equal(ExpectedMessages.CompensatorStatusIs(compensatorStatus), compensatorStatusException.Message);
     }
-
-    [Fact]
-    public void SerializedAndDeserialized()
-    {
-        // arrange
-        var compensatorStatus = CompensatorStatus.Compensated;
-        var compensatorStatusException = new CompensatorStatusException(compensatorStatus).ThrowAndCatch();
-
-        // act
-        var serializedAndDeserializedException = compensatorStatusException.SerializeAndDeserialize();
-
-        // assert
-        Assert.NotNull(serializedAndDeserializedException);
-        Assert.Equal(compensatorStatusException.ToString(), serializedAndDeserializedException.ToString());
-    }
 }

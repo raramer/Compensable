@@ -12,7 +12,7 @@ public abstract class TestBase
             case CompensatorStatus.FailedToExecute:
             case CompensatorStatus.Compensating:
                 typeof(Compensator)
-                    .GetProperty(nameof(Compensator.Status), BindingFlags.Public | BindingFlags.Instance)
+                    .GetProperty(nameof(Compensator.Status), BindingFlags.Public | BindingFlags.Instance)?
                     .SetValue(compensator, status);
                 break;
 
@@ -22,8 +22,14 @@ public abstract class TestBase
 
             case CompensatorStatus.FailedToCompensate:
                 await compensator.AddCompensationAsync(() => throw new InvalidOperationException("Failed to compensate")).ConfigureAwait(false);
-                try { await compensator.CompensateAsync().ConfigureAwait(false); }
-                catch { }
+                try 
+                { 
+                    await compensator.CompensateAsync().ConfigureAwait(false); 
+                }
+                catch
+                {
+                    // Ignore exceptions
+                }
                 break;
         }
     }
@@ -149,10 +155,13 @@ public abstract class TestBase
                 .ConfigureAwait(false);
             return;
         }
+        
+        if (expectedOrderedItems == null)
+            expectedOrderedItems = new HelperBase[0];
 
         // use reflection to extract private Compenstor._taggedCompensations
         var internalTaggedCompensations = typeof(Compensator)
-            .GetField("_taggedCompensations", BindingFlags.Instance | BindingFlags.NonPublic)
+            .GetField("_taggedCompensations", BindingFlags.Instance | BindingFlags.NonPublic)?
             .GetValue(compensator) as ConcurrentStack<(ConcurrentStack<Func<Task>> Compensations, Tag Tag)>
             ?? throw new Exception("Failed to get internal tagged compensations from compensator");
 

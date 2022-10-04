@@ -9,7 +9,7 @@ public class AddCompensationAsync : TestBase
         var compensator = new Compensator();
         var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
 
-        Func<Task> compensation = null;
+        Func<Task>? compensation = null;
 
         // act
         var exception = await Assert.ThrowsAsync<ArgumentNullException>(async () =>

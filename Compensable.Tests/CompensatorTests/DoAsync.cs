@@ -37,7 +37,7 @@ public class DoAsync : TestBase
         var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
 
         var doHelper = new DoHelper();
-        Func<Task> compensation = null;
+        Func<Task>? compensation = null;
 
         // act
         await compensator.DoAsync(doHelper.ExecuteAsync, compensation, tag).ConfigureAwait(false);
@@ -102,7 +102,7 @@ public class DoAsync : TestBase
         var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
 
         var doHelper = new DoHelper(expectExecutionToBeCalled: false);
-        Func<Task> execution = null;
+        Func<Task>? execution = null;
 
         // act
         var exception = await Assert.ThrowsAsync<ArgumentNullException>(async () =>
