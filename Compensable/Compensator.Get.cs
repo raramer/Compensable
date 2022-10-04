@@ -4,31 +4,31 @@ using System.Threading.Tasks;
 namespace Compensable
 {
     partial class Compensator
-	{
+    {
         public async Task<TResult> GetAsync<TResult>(Func<Task<TResult>> execution, Func<TResult, Task> compensation, Tag compensateAtTag)
-		{
-			VerifyCanExecute();
+        {
+            VerifyCanExecute();
 
-			try
-			{
-				if (execution == null)
-					throw new ArgumentNullException(nameof(execution));
+            try
+            {
+                if (execution == null)
+                    throw new ArgumentNullException(nameof(execution));
 
                 VerifyTagExists(compensateAtTag);
 
                 await _executionLock.WaitAsync(_cancellationToken).ConfigureAwait(false);
 
-				try
-				{
-					VerifyCanExecute();
+                try
+                {
+                    VerifyCanExecute();
 
-					var result = await execution().ConfigureAwait(false);
+                    var result = await execution().ConfigureAwait(false);
 
-					if (compensation != null)
+                    if (compensation != null)
                         AddCompensationToStack(async () => await compensation(result).ConfigureAwait(false), compensateAtTag);
 
                     return result;
-				}
+                }
                 catch
                 {
                     await SetStatusAsync(CompensatorStatus.FailedToExecute).ConfigureAwait(false);
@@ -37,18 +37,18 @@ namespace Compensable
                 finally
                 {
                     _executionLock.Release();
-				}
-			}
-			catch (Exception whileExecuting)
-			{
-				await CompensateAsync(whileExecuting).ConfigureAwait(false);
-				throw;
-			}
-		}
+                }
+            }
+            catch (Exception whileExecuting)
+            {
+                await CompensateAsync(whileExecuting).ConfigureAwait(false);
+                throw;
+            }
+        }
 
         #region Execution Overloads
         public async Task<TResult> GetAsync<TResult>(Func<TResult> execution)
-			=> await GetAsync(execution.Awaitable(), default(Func<TResult, Task>), default(Tag)).ConfigureAwait(false);
+            => await GetAsync(execution.Awaitable(), default(Func<TResult, Task>), default(Tag)).ConfigureAwait(false);
 
         public async Task<TResult> GetAsync<TResult>(Func<Task<TResult>> execution)
             => await GetAsync(execution, default(Func<TResult, Task>), default(Tag)).ConfigureAwait(false);
