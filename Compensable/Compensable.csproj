@@ -8,7 +8,7 @@
 	  <PackageProjectUrl>https://github.com/raramer/Compensable</PackageProjectUrl>
 	  <PackageLicenseExpression>MIT</PackageLicenseExpression>
 	  <PackageTags>compensable;compensate;rollback;roll back;netstandard2</PackageTags>
-	  <Version>0.2.0-beta-1</Version>
+	  <Version>0.2.1-beta-1</Version>
   </PropertyGroup>
 
 </Project>
