@@ -7,7 +7,7 @@ namespace Compensable
     {
         public async Task DoIfAsync(Func<Task<bool>> test, Func<Task> execution, Func<Task> compensation, Tag compensateAtTag)
         {
-            ValidateStatusIsExecuting();
+            VerifyCanExecute();
 
             try
             {
@@ -17,28 +17,29 @@ namespace Compensable
                 if (execution == null)
                     throw new ArgumentNullException(nameof(execution));
 
-                ValidateTag(compensateAtTag);
+                VerifyTagExists(compensateAtTag);
 
-                await _executionLock.WaitAsync().ConfigureAwait(false);
+                await _executionLock.WaitAsync(_cancellationToken).ConfigureAwait(false);
 
                 try
                 {
-                    ValidateStatusIsExecuting();
+                    VerifyCanExecute();
 
                     if (await test().ConfigureAwait(false))
                     {
                         await execution().ConfigureAwait(false);
 
                         if (compensation != null)
-                        {
-                            var compensateAtIndex = GetCompensateAtIndex(compensateAtTag);
-                            _compensations.Insert(compensateAtIndex, (compensation, null));
-                        }
+                            AddCompensationToStack(compensation, compensateAtTag);
                     }
+                }
+                catch
+                {
+                    await SetStatusAsync(CompensatorStatus.FailedToExecute).ConfigureAwait(false);
+                    throw;
                 }
                 finally
                 {
-                    // TODO if an exception occurs, we will compensate but there's no lock between this finally and the outer catch
                     _executionLock.Release();
                 }
             }
@@ -49,7 +50,7 @@ namespace Compensable
             }
         }
 
-        #region Two-Parameter Overloads
+        #region Test + Execution Overloads
         public async Task DoIfAsync(bool test, Action execution)
             => await DoIfAsync(() => Task.FromResult(test), execution.Awaitable(), default(Func<Task>), default(Tag)).ConfigureAwait(false);
 
@@ -71,7 +72,7 @@ namespace Compensable
             => await DoIfAsync(test, execution, default(Func<Task>), default(Tag)).ConfigureAwait(false);
         #endregion
 
-        #region Three-Parameter Overloads
+        #region Test + Execution + Compensation Overloads
         public async Task DoIfAsync(bool test, Action execution, Action compensation)
             => await DoIfAsync(() => Task.FromResult(test), execution.Awaitable(), compensation.Awaitable(), default(Tag)).ConfigureAwait(false);
 
@@ -111,7 +112,7 @@ namespace Compensable
             => await DoIfAsync(test, execution, compensation, default(Tag)).ConfigureAwait(false);
         #endregion
 
-        #region Four-Parameter Overloads
+        #region Test + Execution + Compensation + CompensateAtTag Overloads
         public async Task DoIfAsync(bool test, Action execution, Action compensation, Tag compensateAtTag)
             => await DoIfAsync(() => Task.FromResult(test), execution.Awaitable(), compensation.Awaitable(), compensateAtTag).ConfigureAwait(false);
 

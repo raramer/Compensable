@@ -7,27 +7,30 @@ namespace Compensable
     {
         public async Task AddCompensationAsync(Func<Task> compensation, Tag compensateAtTag)
         {
-            ValidateStatusIsExecuting();
+            VerifyCanExecute();
 
             try
             {
                 if (compensation == null)
                     throw new ArgumentNullException(nameof(compensation));
 
-                ValidateTag(compensateAtTag);
+                VerifyTagExists(compensateAtTag);
 
-                await _executionLock.WaitAsync().ConfigureAwait(false);
+                await _executionLock.WaitAsync(_cancellationToken).ConfigureAwait(false);
 
                 try
                 {
-                    ValidateStatusIsExecuting();
+                    VerifyCanExecute();
 
-                    var compensateAtIndex = GetCompensateAtIndex(compensateAtTag);
-                    _compensations.Insert(compensateAtIndex, (compensation, null));
+                    AddCompensationToStack(compensation, compensateAtTag);
+                }
+                catch
+                {
+                    await SetStatusAsync(CompensatorStatus.FailedToExecute).ConfigureAwait(false);
+                    throw;
                 }
                 finally
                 {
-                    // TODO if an exception occurs, we will compensate but there's no lock between this finally and the outer catch
                     _executionLock.Release();
                 }
             }
@@ -38,7 +41,7 @@ namespace Compensable
             }
         }
 
-        #region One-Parameter Overloads
+        #region Compensation Overloads
         public async Task AddCompensationAsync(Action compensation)
             => await AddCompensationAsync(compensation.Awaitable(), default(Tag)).ConfigureAwait(false);
 
@@ -46,7 +49,7 @@ namespace Compensable
             => await AddCompensationAsync(compensation, default(Tag)).ConfigureAwait(false);
         #endregion
 
-        #region Two-Parameter Overloads
+        #region Compensation + CompensateAtTag Overload
         public async Task AddCompensationAsync(Action compensation, Tag compensateAtTag)
             => await AddCompensationAsync(compensation.Awaitable(), compensateAtTag).ConfigureAwait(false);
         #endregion

@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,22 +10,61 @@ namespace Compensable
 {
     public sealed partial class Compensator
     {
-        private readonly SemaphoreSlim _compensationLock = new SemaphoreSlim(1, 1);
-        private readonly List<(Func<Task> Compensate, Tag Tag)> _compensations = new List<(Func<Task> Compensate, Tag tag)>();
-        private readonly SemaphoreSlim _executionLock = new SemaphoreSlim(1, 1);
-
+        private readonly CancellationToken _cancellationToken;
+        private readonly SemaphoreSlim _compensationLock;
+        private readonly SemaphoreSlim _executionLock;
+        private readonly SemaphoreSlim _statusLock;
+        private readonly ConcurrentStack<(ConcurrentStack<Func<Task>> Compensations, Tag Tag)> _taggedCompensations;
+        
         public CompensatorStatus Status { get; private set; }
 
-        public Compensator()
+        public Compensator() : this(CancellationToken.None)
         {
+        }
+
+        public Compensator(CancellationToken cancellationToken)
+        {
+            _cancellationToken = cancellationToken;
             _compensationLock = new SemaphoreSlim(1, 1);
-            _compensations = new List<(Func<Task> Compensate, Tag Tag)>();
             _executionLock = new SemaphoreSlim(1, 1);
+            _statusLock = new SemaphoreSlim(1, 1);
+            _taggedCompensations = new ConcurrentStack<(ConcurrentStack<Func<Task>> Compensations, Tag Tag)>();
 
             Status = CompensatorStatus.Executing;
         }
 
-        // This method is intentionally private.  whileExecuting is only applicable when compensation fails.
+        private void AddCompensationToStack(Func<Task> compensation, Tag compensateAtTag)
+        {
+            if (compensateAtTag == null)
+            {
+                // create compensation stack
+                var compensations = new ConcurrentStack<Func<Task>>();
+
+                // add compensation
+                compensations.Push(compensation);
+
+                // add stack to tagged compensations
+                _taggedCompensations.Push((compensations, null));
+            }
+            else
+            {
+                // add compensation to tagged compensation
+                _taggedCompensations.First(tc => tc.Tag == compensateAtTag).Compensations.Push(compensation);
+            }
+        }
+
+        private Tag AddTagToStack(Tag tag)
+        {
+            _taggedCompensations.Push((new ConcurrentStack<Func<Task>>(), tag));
+            return tag;
+        }
+
+        private async Task ClearCompensationsAsync()
+        {
+            // TODO do we need to acquire compensation lock as an additional safeguard?
+            _taggedCompensations.Clear();
+        }
+
         private async Task CompensateAsync(Exception whileExecuting)
         {
             // short-circuit if compensated / failed to compensate
@@ -35,12 +74,12 @@ namespace Compensable
             if (Status == CompensatorStatus.FailedToCompensate)
                 throw new CompensatorStatusException(CompensatorStatus.FailedToCompensate);
 
-            // acquire compensation lock
+            // acquire compensation lock, ignore cancellation token on compensation
             await _compensationLock.WaitAsync().ConfigureAwait(false);
 
             try
             {
-                // short-circuit if compensated
+                // short-circuit if compensated / failed to compensate
                 if (Status == CompensatorStatus.Compensated)
                     return;
 
@@ -48,37 +87,39 @@ namespace Compensable
                     throw new CompensatorStatusException(CompensatorStatus.FailedToCompensate);
 
                 // set status
-                Status = CompensatorStatus.Compensating;
+                await SetStatusAsync(CompensatorStatus.Compensating).ConfigureAwait(false);
 
-                // acquire execution lock, i.e. make sure nothing is still executing
+                // acquire execution lock, i.e. make sure nothing is still executing, ignore cancellation token on compensation
                 await _executionLock.WaitAsync().ConfigureAwait(false);
 
-                // compensate (work backwards through list)
-                while (_compensations.Count > 0)
+                // compensate compensation tags
+                while (_taggedCompensations.TryPeek(out var taggedCompensations))
                 {
-                    // get last index
-                    var lastIndex = _compensations.Count - 1;
+                    while (taggedCompensations.Compensations.TryPeek(out var compensateAsync))
+                    {
+                        // execute compensation
+                        await compensateAsync().ConfigureAwait(false);
 
-                    // execute compensation if defined (i.e. not a tag)
-                    if (_compensations[lastIndex].Compensate != null)
-                        await _compensations[lastIndex].Compensate().ConfigureAwait(false);
+                        // remove compensation
+                        taggedCompensations.Compensations.TryPop(out _);
+                    }
 
-                    // remove execution from list
-                    _compensations.RemoveAt(lastIndex);
+                    // removed tagged compensation
+                    _taggedCompensations.TryPop(out _);
                 }
 
                 // set status
-                Status = CompensatorStatus.Compensated;
+                await SetStatusAsync(CompensatorStatus.Compensated).ConfigureAwait(false);
             }
             catch (Exception whileCompensating)
             {
                 // set status
-                Status = CompensatorStatus.FailedToCompensate;
+                await SetStatusAsync(CompensatorStatus.FailedToCompensate).ConfigureAwait(false);
 
                 // throw compensation exception
-                throw (whileExecuting == null)
-                    ? new CompensationException(whileCompensating)
-                    : new CompensationException(whileCompensating, whileExecuting);
+                throw new CompensationException(
+                    whileCompensating: whileCompensating, 
+                    whileExecuting: whileExecuting);
             }
             finally
             {
@@ -88,33 +129,35 @@ namespace Compensable
             }
         }
 
-        private int GetCompensateAtIndex(Tag tag)
+        private async Task SetStatusAsync(CompensatorStatus status)
         {
-            // short-circuit if tag is null
-            if (tag is null)
-                return _compensations.Count;
+            // aquire status lock, ignore cancellation token
+            await _statusLock.WaitAsync().ConfigureAwait(false);
 
-            // find index of tag
-            var tagIndex = 0;
-            while (tagIndex < _compensations.Count) // TODO can compensations change?
+            try
             {
-                if (_compensations[tagIndex].Tag == tag)
-                    return tagIndex;
-                tagIndex++;
+                // set status if greater than current status
+                if (status > Status)
+                    Status = status;
             }
-
-            throw new TagNotFoundException();
+            finally
+            {
+                // release lock
+                _statusLock.Release();
+            }
         }
 
-        private void ValidateStatusIsExecuting()
+        private void VerifyCanExecute()
         {
             if (Status != CompensatorStatus.Executing)
                 throw new CompensatorStatusException(Status);
+
+            _cancellationToken.ThrowIfCancellationRequested();
         }
 
-        private void ValidateTag(Tag tag)
+        private void VerifyTagExists(Tag tag)
         {
-            if (tag != null && !_compensations.Any(c => c.Tag == tag))
+            if (tag != null && !_taggedCompensations.Any(c => c.Tag == tag))
                 throw new TagNotFoundException();
         }
     }

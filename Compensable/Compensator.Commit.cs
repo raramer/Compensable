@@ -5,7 +5,7 @@ namespace Compensable
 {
     partial class Compensator
     {
-        internal async Task<Tag> CreateTagAsync(string label)
+        public async Task CommitAsync()
         {
             VerifyCanExecute();
 
@@ -17,7 +17,7 @@ namespace Compensable
                 {
                     VerifyCanExecute();
 
-                    return AddTagToStack(new Tag(label));
+                    await ClearCompensationsAsync().ConfigureAwait(false);
                 }
                 catch
                 {
@@ -35,10 +35,5 @@ namespace Compensable
                 throw;
             }
         }
-
-        #region Parameterless Overload
-        public async Task<Tag> CreateTagAsync()
-            => await CreateTagAsync(default(string)).ConfigureAwait(false);
-        #endregion
     }
 }

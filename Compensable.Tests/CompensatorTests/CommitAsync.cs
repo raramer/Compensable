@@ -1,96 +1,33 @@
 ﻿namespace Compensable.Tests.CompensatorTests;
 
-public class CreateTagAsync : TestBase
+public class CommitAsync : TestBase
 {
     [Fact]
-    public async Task LabelIsEmpty()
+    public async Task CompensationsAreDefined()
     {
         // arrange
         var compensator = new Compensator();
+        await ArrangeTagsAndCompensationsAsync(compensator).ConfigureAwait(false);
 
         // act
-        var label = "";
-        var tag = await compensator.CreateTagAsync(label).ConfigureAwait(false);
+        await compensator.CommitAsync().ConfigureAwait(false);
 
         // assert
-        Assert.NotNull(tag);
-        Assert.True(Guid.TryParse(tag.Label, out _));
-
         Assert.Equal(CompensatorStatus.Executing, compensator.Status);
 
         await AssertInternalCompensationOrderAsync(compensator).ConfigureAwait(false);
     }
 
     [Fact]
-    public async Task LabelIsNotSpecified()
+    public async Task NothingToCompensate()
     {
         // arrange
         var compensator = new Compensator();
 
         // act
-        var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
+        await compensator.CommitAsync().ConfigureAwait(false);
 
         // assert
-        Assert.NotNull(tag);
-        Assert.True(Guid.TryParse(tag.Label, out _));
-
-        Assert.Equal(CompensatorStatus.Executing, compensator.Status);
-
-        await AssertInternalCompensationOrderAsync(compensator).ConfigureAwait(false);
-    }
-
-    [Fact]
-    public async Task LabelIsNull()
-    {
-        // arrange
-        var compensator = new Compensator();
-
-        // act
-        var label = default(string);
-        var tag = await compensator.CreateTagAsync(label).ConfigureAwait(false);
-
-        // assert
-        Assert.NotNull(tag);
-        Assert.True(Guid.TryParse(tag.Label, out _));
-
-        Assert.Equal(CompensatorStatus.Executing, compensator.Status);
-
-        await AssertInternalCompensationOrderAsync(compensator).ConfigureAwait(false);
-    }
-
-    [Fact]
-    public async Task LabelIsSpecified()
-    {
-        // arrange
-        var compensator = new Compensator();
-
-        // act
-        var label = "My label";
-        var tag = await compensator.CreateTagAsync(label).ConfigureAwait(false);
-
-        // assert
-        Assert.NotNull(tag);
-        Assert.Equal(label, tag.Label);
-
-        Assert.Equal(CompensatorStatus.Executing, compensator.Status);
-
-        await AssertInternalCompensationOrderAsync(compensator).ConfigureAwait(false);
-    }
-
-    [Fact]
-    public async Task LabelIsWhitespace()
-    {
-        // arrange
-        var compensator = new Compensator();
-
-        // act
-        var label = " ";
-        var tag = await compensator.CreateTagAsync(label).ConfigureAwait(false);
-
-        // assert
-        Assert.NotNull(tag);
-        Assert.True(Guid.TryParse(tag.Label, out _));
-
         Assert.Equal(CompensatorStatus.Executing, compensator.Status);
 
         await AssertInternalCompensationOrderAsync(compensator).ConfigureAwait(false);
@@ -106,7 +43,7 @@ public class CreateTagAsync : TestBase
 
         // act
         var exception = await Assert.ThrowsAsync<CompensatorStatusException>(async () =>
-            await compensator.CreateTagAsync().ConfigureAwait(false)
+            await compensator.CommitAsync().ConfigureAwait(false)
         ).ConfigureAwait(false);
 
         // assert
@@ -123,7 +60,7 @@ public class CreateTagAsync : TestBase
 
         // act
         var exception = await Assert.ThrowsAsync<CompensatorStatusException>(async () =>
-            await compensator.CreateTagAsync().ConfigureAwait(false)
+            await compensator.CommitAsync().ConfigureAwait(false)
         ).ConfigureAwait(false);
 
         // assert
@@ -140,7 +77,7 @@ public class CreateTagAsync : TestBase
 
         // act
         var exception = await Assert.ThrowsAsync<CompensatorStatusException>(async () =>
-            await compensator.CreateTagAsync().ConfigureAwait(false)
+            await compensator.CommitAsync().ConfigureAwait(false)
         ).ConfigureAwait(false);
 
         // assert
@@ -157,7 +94,7 @@ public class CreateTagAsync : TestBase
 
         // act
         var exception = await Assert.ThrowsAsync<CompensatorStatusException>(async () =>
-            await compensator.CreateTagAsync().ConfigureAwait(false)
+            await compensator.CommitAsync().ConfigureAwait(false)
         ).ConfigureAwait(false);
 
         // assert
