@@ -16,6 +16,7 @@ or the dotnet CLI.
 dotnet add package Compensable
 ```
 
+
 ## How to get started
 1. Define a compensator
 
@@ -25,15 +26,15 @@ dotnet add package Compensable
 
 2. Execute the steps of your workflow in the context of the compensator.  
 
-   * Upon successful completion of a step, its compensation (if defined) is added to an internal compensation stack.  
+   * Upon successful completion of a step's execution, its defined compensation is added to an internal stack.  
    
-   * If an exception is thrown in any execution, (DoIfAsync) test, or (ForeachAsync) enumeration, then the compensations in the stack are called in reverse order (except in the case of tags) and the original exception is thrown.  
+   * If an exception is thrown in any *execution*, *test*, or *items* enumeration, then the compensations in the stack are called in reverse order and the original exception is re-thrown. See "**Tags**" below for specifying a different order.
    
-   * If an exception occurs when calling a compensation, then a `CompensationException` is thrown that contains `WhileExecuting` and `WhileCompensating` properties and whose inner exception is also the original WhileExecuting exception.  (See below for alternate behavior when `CompensateAsync` is called.)
+   * If an exception is thrown when calling a compensation, then a `CompensationException` is thrown that contains `WhileExecuting` and `WhileCompensating` properties and whose inner exception is also the original WhileExecuting exception. See "**CompensateAsync**" below for its alternate behavior.
    
-   _Overloads are available for async and non-async methods, and methods that do not require compensation._
+   _Overloads are available for calling async and non-async target methods, non-method tests, and steps that do not require compensation._
 
-   * `DoAsync` - defines a step that does not return a response.
+   * `DoAsync` - executes a step that does not return a result.
      
      ```csharp
      await compensator.DoAsync(
@@ -42,44 +43,49 @@ dotnet add package Compensable
          compensateAtTag: null);
      ```
 
-   * `DoIfAsync` - defines a step peforms a `test`.  If the result of that test is true, then the execution and compensation are defined.
-     
+   * `DoIfAsync` - executes a step if its *test* evaluates to true.
+
      ```csharp
-     await compensator.DoIfAsync(test: async () => await testAsync(),
+     await compensator.DoIfAsync(
+         test: async () => await testAsync(),
          execution: async () => await stepAsync(),
          compensation: async () => await compensateStepAsync(),
          compensateAtTag: null);
      ```
 
-   * `GetAsync` - executes a step that returns a `result`.  The compensation method of GetAsync can optionally define a `_result` parameter that is equivalent to `result`, but will be unaffected if `result` is reassigned.
+   * `GetAsync` - executes a step that returns a *result*.  
+   
+     Its compensation can optionally define a *_result* parameter that is equivalent to *result*, but will be unaffected if *result* is reassigned.
      
      ```csharp
-     var result = await compensator.DoIfAsync(async () => await testAsync(),
+     var result = await compensator.GetAsync(
          execution: async () => await stepAsync(),
          compensation: async (_result) => await compensateStepAsync(),
          compensateAtTag: null);
      ```
 
-   * `ForeachAsync` - executes a step per item in an IEnumerable<T>.  If the item enumerator or execution throws an exception then remaining items are not executed.
+   * `ForeachAsync` - executes a step per *item* in an IEnumerable&lt;T&gt;.  
+   
+     If the item enumerator or execution throws an exception, then remaining items are not executed.
 
      ```csharp
      //var items = new[] { "item1", "item2", item3" };
-     await compensator.ForeachAsync(items,
+     await compensator.ForeachAsync(
+         items: items,
          execution: async (item) => await stepAsync(item),
          compensation: async (item) => await compensateStepAsync(item),
          compensateAtTag: null);
      ```
 
-   * `AddCompensationAsync` - defines a step that only provides compensation.  This is useful if you use more than one compensator and/or as an alternative to using tags.
+   * `AddCompensationAsync` - defines a step that only provides compensation.
      
      ```csharp
-     await compensator.AddCompensationAsync(async () => await testAsync(),
-         execution: async () => await stepAsync(),
-         compensation: async (_result) => await compensateStepAsync(),
+     await compensator.AddCompensationAsync(,
+         compensation: async () => await compensateStepAsync(),
          compensateAtTag: null);
      ```
 
-   * `CommitAsync` - clears all defined compensations from the stack without calling them, and the Status will remain Executing.
+   * `CommitAsync` - clears all defined compensations from the stack without calling them.
     
      ```csharp
      await compensator.CommitAsync();
@@ -93,7 +99,7 @@ dotnet add package Compensable
      await compensator.CompensateAsync();
      ```
 
-   * `CreateTagAsync` - defines a tagged position in the compensation stack with an optional label.
+   * `CreateTagAsync` - defines a "tagged" position in the stack.  See "**Tags**" below.
 
      ```csharp
      var tag = await compensator.CreateTagAsync();
@@ -103,7 +109,7 @@ dotnet add package Compensable
 
 The compensator exposes a `Status` property that can be used to inspect its current internal state.  
 
-If the Status is anything other than `Executing`, it cannot be used for executing additional steps.  Attempts to do so will result in a `CompensatorStatusException` being thrown.
+If the Status is anything other than *Executing*, it cannot be used for executing additional steps.  Attempts to do so will result in a `CompensatorStatusException` being thrown.
 
    * `Executing` - the compensator is idle or executing a step.
 
@@ -117,17 +123,25 @@ If the Status is anything other than `Executing`, it cannot be used for executin
   
 ## Tags
 
-Tags define a position in the compensation stack with an optional label. They do nothing unless a step defines a `compensation` that should `compensateAtTag`.  When that happens the compensation is pushed into the compensation stack at the position of the tag.  More than one step can reference the same tag, but they are added in order that they are called.  
+Tags define a position in the stack. 
+
+* They do nothing unless a step defines a *compensation* that should *compensateAtTag*.  When that happens the compensation is pushed into the stack at the position of the tag instead of the top of the stack.  
+ 
+* More than one step can reference the same tag, and their compensations will be called in reverse order when compensating.  
+
+* If a tag does not exist in the stack, a `TagNotFoundException` will be thrown.
 
 _Tags should be used sparingly!_
 
    ```csharp
    var tag = await compensator.CreateTagAsync();
 
+   // step 1
    await compensator.DoAsync(
        async () => await step1Async(),
        compensation: async () => await compensateStep1Async());
 
+   // step 2
    await compensator.DoAsync(
        async () => await step2Async(),
        compensation: async () => await compensateStep2Async()
@@ -136,11 +150,7 @@ _Tags should be used sparingly!_
    // on exception, compensateStep1Async will be called first, followed by compensateStep2Async.
    await compensator.DoAsync(
        async () => await step3Async());
-```
-
-## Multi-threading
-
-The compensator is intended to be single-threaded in order to better guarantee an order of operations, however it is intended to be thread safe.
+   ```
 
 ## Practical Example
 This example creates an email service on an async remote platform and stores a reference to it in a non-async local account service repository.  A tag is used alter the compensation stack to delete the entry from the local repository last.  If the compensation call to delete the service from the remote platform fails, the `emailService.Id` will still be available in the local repository for manual cleanup.
@@ -179,3 +189,7 @@ This example creates an email service on an async remote platform and stores a r
            async () => await _emailPlatform.SetCatchall(service.Id, adminEmailAddress));
    }
    ```
+
+## Thread-safety
+
+In order to ensure a predictable order of operations, the compensator is intended to be single-threaded.  However, it is thread-safe through a set of execution, compensation, and status locks.

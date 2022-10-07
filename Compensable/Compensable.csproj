@@ -1,14 +1,15 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-      <Authors>Richard Ramer</Authors>
-      <PackageId>Compensable</PackageId>
-      <Description>A library to facilitate the compensating (rolling back) of a series of successfully completed workflow steps when an exception occurs.</Description>
-      <PackageProjectUrl>https://github.com/raramer/Compensable</PackageProjectUrl>
-      <PackageLicenseExpression>MIT</PackageLicenseExpression>
-      <PackageTags>compensable;compensate;rollback;roll back;netstandard2</PackageTags>
-      <Version>0.2.2-beta-1</Version>
+    <Authors>Richard Ramer</Authors>
+    <PackageId>Compensable</PackageId>
+    <Description>A library to facilitate the compensating (rolling back) of a series of successfully completed workflow steps when an exception occurs.</Description>
+    <PackageProjectUrl>https://github.com/raramer/Compensable</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageTags>compensable;compensate;rollback;roll back;netstandard2</PackageTags>
+	<PackageReadmeFile>README.md</PackageReadmeFile>
+    <Version>0.2.3-beta-2</Version>
   </PropertyGroup>
-
+	
 </Project>
