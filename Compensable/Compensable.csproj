@@ -9,7 +9,7 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageTags>compensable;compensate;rollback;roll back;netstandard2</PackageTags>
 	    <PackageReadmeFile>README.md</PackageReadmeFile>
-        <Version>0.2.3-beta-2</Version>
+        <Version>0.2.4-beta-2</Version>
     </PropertyGroup>
 
 	<ItemGroup>

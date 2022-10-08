@@ -18,7 +18,7 @@ dotnet add package Compensable
 
 
 ## How to get started
-1. Define a compensator
+1. Define a compensator.
 
    ```csharp
    var compensator = new Compensator();
@@ -26,15 +26,15 @@ dotnet add package Compensable
 
 2. Execute the steps of your workflow in the context of the compensator.  
 
-   * Upon successful completion of a step's execution, its defined compensation is added to an internal stack.  
+   * Upon successful completion of a step's execution, its defined compensation is added to the top of an internal stack.  If a *compensateAtTag* is specified the compensation will be inserted at the position of the tag.  See **Tags** for more details.
    
-   * If an exception is thrown in any *execution*, *test*, or *items* enumeration, then the compensations in the stack are called in reverse order and the original exception is re-thrown. See "**Tags**" below for specifying a different order.
+   * If an exception is thrown in any *execution*, *test*, or *items* enumeration, then the compensations in the stack are called in reverse order and the original exception is re-thrown.
    
-   * If an exception is thrown when calling a compensation, then a `CompensationException` is thrown that contains `WhileExecuting` and `WhileCompensating` properties and whose inner exception is also the original WhileExecuting exception. See "**CompensateAsync**" below for its alternate behavior.
+   * If an exception is thrown when calling a compensation, then a `CompensationException` is thrown that contains **WhileExecuting** and **WhileCompensating** properties and whose inner exception is also the original WhileExecuting exception. See **CompensateAsync** for its alternate behavior.
    
    _Overloads are available for calling async and non-async target methods, non-method tests, and steps that do not require compensation._
 
-   * `DoAsync` - executes a step that does not return a result.
+   * **DoAsync** - executes a step that does not return a result.
      
      ```csharp
      await compensator.DoAsync(
@@ -43,7 +43,18 @@ dotnet add package Compensable
          compensateAtTag: null);
      ```
 
-   * `DoIfAsync` - executes a step if its *test* evaluates to true.
+   * **GetAsync** - executes a step that returns a *result*.  
+   
+     Its compensation can optionally define a *_result* parameter that is equivalent to *result*, but will be unaffected if *result* is reassigned.
+     
+     ```csharp
+     var result = await compensator.GetAsync(
+         execution: async () => await stepAsync(),
+         compensation: async (_result) => await compensateStepAsync(_result),
+         compensateAtTag: null);
+     ```
+
+   * **DoIfAsync** - executes a step if its *test* evaluates to true.
 
      ```csharp
      await compensator.DoIfAsync(
@@ -53,23 +64,12 @@ dotnet add package Compensable
          compensateAtTag: null);
      ```
 
-   * `GetAsync` - executes a step that returns a *result*.  
-   
-     Its compensation can optionally define a *_result* parameter that is equivalent to *result*, but will be unaffected if *result* is reassigned.
-     
-     ```csharp
-     var result = await compensator.GetAsync(
-         execution: async () => await stepAsync(),
-         compensation: async (_result) => await compensateStepAsync(),
-         compensateAtTag: null);
-     ```
-
-   * `ForeachAsync` - executes a step per *item* in an IEnumerable&lt;T&gt;.  
+   * **ForeachAsync** - executes a step per *item* in an IEnumerable&lt;T&gt;.  
    
      If the item enumerator or execution throws an exception, then remaining items are not executed.
 
      ```csharp
-     //var items = new[] { "item1", "item2", item3" };
+     // var items = new[] { "item1", "item2", "item3" };
      await compensator.ForeachAsync(
          items: items,
          execution: async (item) => await stepAsync(item),
@@ -77,29 +77,29 @@ dotnet add package Compensable
          compensateAtTag: null);
      ```
 
-   * `AddCompensationAsync` - defines a step that only provides compensation.
+   * **AddCompensationAsync** - defines a step that only provides compensation.
      
      ```csharp
-     await compensator.AddCompensationAsync(,
+     await compensator.AddCompensationAsync(
          compensation: async () => await compensateStepAsync(),
          compensateAtTag: null);
      ```
 
-   * `CommitAsync` - clears all defined compensations from the stack without calling them.
+   * **CommitAsync** - clears all defined compensations from the stack without calling them.
     
      ```csharp
      await compensator.CommitAsync();
      ```
 
-   * `CompensateAsync` - invokes compensation directly.  
+   * **CompensateAsync** - invokes compensation directly.  
    
-     If an exception occurs when calling a compensation, then a `CompensationException` is thrown that only contains a `WhileCompensating` value and whose inner exception is also the WhileCompensating exception.
+     If an exception occurs when calling a compensation, then a `CompensationException` is thrown that only contains a **WhileCompensating** value and whose inner exception is also the WhileCompensating exception.
      
      ```csharp
      await compensator.CompensateAsync();
      ```
 
-   * `CreateTagAsync` - defines a "tagged" position in the stack.  See "**Tags**" below.
+   * **CreateTagAsync** - defines a "tagged" position in the stack.  See **Tags** for more details.
 
      ```csharp
      var tag = await compensator.CreateTagAsync();
@@ -107,19 +107,19 @@ dotnet add package Compensable
 
 ## Status
 
-The compensator exposes a `Status` property that can be used to inspect its current internal state.  
+The compensator exposes a **Status** property that can be used to inspect its current internal state.  
 
 If the Status is anything other than *Executing*, it cannot be used for executing additional steps.  Attempts to do so will result in a `CompensatorStatusException` being thrown.
 
-   * `Executing` - the compensator is idle or executing a step.
+   * **Executing** - the compensator is idle or executing a step.
 
-   * `FailedToExecute` - a step's execution has failed, but compensation has not yet started.
+   * **FailedToExecute** - a step's execution has failed, but compensation has not yet started.
 
-   * `Compensating` - the compensator is compensating steps in the compensation stack.
+   * **Compensating** - the compensator is compensating steps in the compensation stack.
 
-   * `Compensated` - the compensator has successfully compensated all steps.
+   * **Compensated** - the compensator has successfully compensated all steps.
 
-   * `FailedToCompensate` - the compensator failed to compensate a step in the stack.
+   * **FailedToCompensate** - the compensator failed to compensate a step in the stack.
   
 ## Tags
 
@@ -134,6 +134,7 @@ Tags define a position in the stack.
 _Tags should be used sparingly!_
 
    ```csharp
+   // create tag
    var tag = await compensator.CreateTagAsync();
 
    // step 1
@@ -144,49 +145,58 @@ _Tags should be used sparingly!_
    // step 2
    await compensator.DoAsync(
        async () => await step2Async(),
-       compensation: async () => await compensateStep2Async()
+       compensation: async () => await compensateStep2Async(),
        compensateAtTag: tag);
 
-   // on exception, compensateStep1Async will be called first, followed by compensateStep2Async.
-   await compensator.DoAsync(
-       async () => await step3Async());
+   // compensate
+   // compensateStep1Async will be called first, followed by compensateStep2Async.
+   await compensator.CompensateAsync();
    ```
 
 ## Practical Example
-This example creates an email service on an async remote platform and stores a reference to it in a non-async local account service repository.  A tag is used alter the compensation stack to delete the entry from the local repository last.  If the compensation call to delete the service from the remote platform fails, the `emailService.Id` will still be available in the local repository for manual cleanup.
+This example creates an email service on an async email platform and stores a reference to it in a non-async account service repository.  A tag is used alter the compensation stack to delete the entry from the local account service repository last.
 
    ```csharp
-   public async Task CreateEmailAsync(Guid accountId, string domainName, int mailboxQuota, int diskQuotaMb, 
-        string adminMailboxAddress, string adminMailboxPassword, int adminMailboxDiskQuotaMb, bool adminMailboxIsCatchall)
+   public async Task CreateEmailAsync(
+       Guid accountId,
+       string domainName,
+       int mailboxQuota,
+       int diskQuotaMb,
+       string adminMailboxAddress,
+       string adminMailboxPassword,
+       int adminMailboxDiskQuotaMb,
+       bool adminMailboxIsCatchall,
+       string[] adminAliasAddresses)
    {
        // define a new compensator
        var compensator = new Compensator();
 
-       // (optional) define a tag to that on compensate the local account service repository entry will be deleted last
+       // define a tag
        var deleteFromRepositoryTag = await compensator.CreateTagAsync();
 
-       // create email service on the remote platform
-       // on compensate delete the email service and any mailboxes
-       var emailService = await compensator.GetAsync(
-           async () => await _emailPlatform.CreateService(domainName, mailboxQuota, diskQuota),
-           compensation: async (_emailService) => await _emailPlatform.DeleteService(_emailService.Id));
+       // create email service on the remote platform on compensate delete the email service and any mailboxes
+       var emailServiceId = await compensator.GetAsync(
+           async () => await _emailPlatform.CreateServiceAsync(domainName, mailboxQuota, diskQuotaMb),
+           compensation: async (_emailServiceId) => await _emailPlatform.DeleteServiceAsync(_emailServiceId));
 
-       // add an email service to the local account service repository
-       // on compensate remove the email service from the local account service repository at the deleteFromRepositoryTag
+       // add an email service to the local account service repository on compensate remove the email service from the local account service
+       // repository but do this last at the deleteFromRepositoryTag
        await compensator.DoAsync(
-           () => _accountServiceRepository.Create(accountId, "Email", platformId: service.Id),
+           () => _accountServiceRepository.Create(accountId, "Email", platformId: emailServiceId),
            compensation: () => _accountServiceRepository.Delete(accountId, "Email"),
            compensateAtTag: deleteFromRepositoryTag);
 
-       // create admin mailbox
-       // no compensation necessary
+       // create admin mailbox no compensation necessary
        await compensator.DoAsync(
-           async () => await _emailPlatform.CreateAdminAsync(service.Id, adminEmailAddress, adminPassword, adminDiskQuotaMb));
+           async () => await _emailPlatform.CreateAdminMailboxAsync(emailServiceId, adminMailboxAddress, adminMailboxPassword, adminMailboxDiskQuotaMb));
 
-       // optionally set admin mailbox as the catchall
-       // no compensation necessary
-       await compensator.DoIfAsync(adminIsCatchall,
-           async () => await _emailPlatform.SetCatchall(service.Id, adminEmailAddress));
+       // optionally set admin mailbox as the catchall no compensation necessary
+       await compensator.DoIfAsync(adminMailboxIsCatchall,
+           async () => await _emailPlatform.SetCatchallAsync(emailServiceId, adminMailboxAddress));
+
+       // create aliases no compensation necessary
+       await compensator.ForeachAsync(adminAliasAddresses,
+           async (adminAliasAddress) => await _emailPlatform.CreateAliasAsync(emailServiceId, adminMailboxAddress, adminAliasAddress));
    }
    ```
 
