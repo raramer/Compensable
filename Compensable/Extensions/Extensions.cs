@@ -26,14 +26,14 @@ namespace Compensable
                 : () => Task.FromResult(function());
         }
 
-        internal static Func<T1, Task> AwaitableIgnore<T1>(this Action action)
+        internal static Func<T1, Task> AwaitableIgnoreParameter<T1>(this Action action)
         {
             return action == null
                 ? default(Func<T1, Task>)
                 : (T1 t1) => { action(); return Task.CompletedTask; };
         }
 
-        internal static Func<T1, Task> Ignore<T1>(this Func<Task> asyncFunction)
+        internal static Func<T1, Task> IgnoreParameter<T1>(this Func<Task> asyncFunction)
         {
             return asyncFunction == null
                 ? default(Func<T1, Task>)

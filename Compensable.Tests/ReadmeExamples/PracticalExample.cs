@@ -2,10 +2,10 @@
 
 internal class PracticalExample
 {
-    private IAccountServiceRepository? _accountServiceRepository;
+    private IAccountServiceRepository? _accountServiceRepository = null;
+    private IEmailPlatform? _emailPlatform = null;
 
-    private IEmailPlatform? _emailPlatform;
-
+    #pragma warning disable CS8602
     public async Task CreateEmailAsync(
         Guid accountId,
         string domainName,
@@ -47,6 +47,7 @@ internal class PracticalExample
         await compensator.ForeachAsync(adminAliasAddresses,
             async (adminAliasAddress) => await _emailPlatform.CreateAliasAsync(emailServiceId, adminMailboxAddress, adminAliasAddress));
     }
+    #pragma warning restore CS8602
 
     private interface IAccountServiceRepository
     {

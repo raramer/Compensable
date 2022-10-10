@@ -8,26 +8,16 @@ namespace Compensable
     {
         public async Task ForeachAsync<T>(IEnumerable<T> items, Func<T, Task> execution, Func<T, Task> compensation, Tag compensateAtTag)
         {
-            VerifyCanExecute();
-
-            try
-            {
-                if (items == null)
-                    throw new ArgumentNullException(nameof(items));
-
-                if (execution == null)
-                    throw new ArgumentNullException(nameof(execution));
-
-                VerifyTagExists(compensateAtTag);
-
-                await _executionLock.WaitAsync(_cancellationToken).ConfigureAwait(false);
-
-                try
+            await ExecuteAsync(
+                validation: () =>
                 {
-                    VerifyCanExecute();
-
+                    ValidateItems(items);
+                    ValidateExecution(execution);
+                    ValidateTag(compensateAtTag);
+                },
+                execution: async () =>
+                {
                     // TODO do we need create a foreach specific Tag to guarantee all foreach item compensations are grouped?
-
                     foreach (var next in items)
                     {
                         // store item to local variable as the value of next is updated by the enumerator
@@ -38,22 +28,7 @@ namespace Compensable
                         if (compensation != null)
                             AddCompensationToStack(async () => await compensation(item).ConfigureAwait(false), compensateAtTag);
                     }
-                }
-                catch
-                {
-                    await SetStatusAsync(CompensatorStatus.FailedToExecute).ConfigureAwait(false);
-                    throw;
-                }
-                finally
-                {
-                    _executionLock.Release();
-                }
-            }
-            catch (Exception whileExecuting)
-            {
-                await CompensateAsync(whileExecuting).ConfigureAwait(false);
-                throw;
-            }
+                }).ConfigureAwait(false);
         }
 
         #region Items + Execution Overloads

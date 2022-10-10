@@ -32,6 +32,4 @@ internal class Tags
     private Task step1Async() => Task.CompletedTask;
 
     private Task step2Async() => Task.CompletedTask;
-
-    private Task step3Async() => Task.CompletedTask;
 }
