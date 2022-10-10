@@ -2,8 +2,9 @@
 
 internal class Steps
 {
-    private Compensator compensator;
+    private Compensator? compensator = null;
 
+    #pragma warning disable CS8602
     internal async Task AddCompensationAsync(bool compensate)
     {
         await compensator.AddCompensationAsync(
@@ -75,4 +76,5 @@ internal class Steps
         Task compensateStepAsync(int result) => Task.CompletedTask;
         Task<int> stepAsync() => Task.FromResult(1);
     }
+    #pragma warning restore CS8602
 }
