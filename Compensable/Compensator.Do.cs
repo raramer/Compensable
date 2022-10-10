@@ -7,41 +7,19 @@ namespace Compensable
     {
         public async Task DoAsync(Func<Task> execution, Func<Task> compensation, Tag compensateAtTag)
         {
-            VerifyCanExecute();
-
-            try
-            {
-                if (execution == null)
-                    throw new ArgumentNullException(nameof(execution));
-
-                VerifyTagExists(compensateAtTag);
-
-                await _executionLock.WaitAsync(_cancellationToken).ConfigureAwait(false);
-
-                try
+            await ExecuteAsync(
+                validation: () =>
                 {
-                    VerifyCanExecute();
-
+                    ValidateExecution(execution);
+                    ValidateTag(compensateAtTag);
+                },
+                execution: async () =>
+                {
                     await execution().ConfigureAwait(false);
 
                     if (compensation != null)
                         AddCompensationToStack(compensation, compensateAtTag);
-                }
-                catch
-                {
-                    await SetStatusAsync(CompensatorStatus.FailedToExecute).ConfigureAwait(false);
-                    throw;
-                }
-                finally
-                {
-                    _executionLock.Release();
-                }
-            }
-            catch (Exception whileExecuting)
-            {
-                await CompensateAsync(whileExecuting).ConfigureAwait(false);
-                throw;
-            }
+                }).ConfigureAwait(false);
         }
 
         #region Execution Overloads
