@@ -1,4 +1,4 @@
-﻿using Compensable.Tests.Helpers.Extensions;
+﻿using Compensable.Tests.Extensions;
 
 namespace Compensable.Tests.CompensationExceptionTests;
 
