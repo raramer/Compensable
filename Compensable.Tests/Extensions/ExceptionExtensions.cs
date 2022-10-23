@@ -1,6 +1,4 @@
-﻿using System.Xml.Serialization;
-
-namespace Compensable.Tests.Helpers.Extensions;
+﻿namespace Compensable.Tests.Extensions;
 
 internal static class ExceptionExtensions
 {
