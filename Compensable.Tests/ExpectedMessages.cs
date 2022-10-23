@@ -1,4 +1,4 @@
-﻿namespace Compensable.Tests.Helpers;
+﻿namespace Compensable.Tests;
 
 internal static class ExpectedMessages
 {

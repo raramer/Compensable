@@ -1,66 +1,112 @@
-﻿namespace Compensable.Tests.Helpers;
+﻿using Compensable.Tests.Helpers.Bases;
+
+namespace Compensable.Tests.Helpers;
 
 public class GetHelper : ExecuteCompensateHelperBase
 {
-    public bool CompensationCalledWithResult { get; protected set; }
-    public object ExecuteResult { get; }
+    public Func<object, Task>? CompensateAsync { get; }
 
-    public GetHelper(string? label = null, bool throwOnExecute = false, bool throwOnCompensate = false, bool expectExecutionToBeCalled = true, bool expectCompensationToBeCalled = false) : base(
-        label: label,
-        throwOnExecute: throwOnExecute,
-        throwOnCompensate: throwOnCompensate,
-        expectExecutionToBeCalled: expectExecutionToBeCalled,
-        expectCompensationToBeCalled: expectCompensationToBeCalled)
+    public Func<Task<object>>? ExecuteAsync { get; }
+
+    public object ExpectedExecuteResult { get; }
+    
+    private bool CompensationCalledWithResult { get; set; }
+
+    public GetHelper(string? label = null)
+        : this(Execution.ExpectToBeCalledAndSucceed, 
+            Compensation.WouldSucceedButNotCalled, 
+            label)
     {
-        ExecuteResult = new object();
+    }
+
+    public GetHelper(Execution.Options executionOptions, string? label = null)
+        : this(executionOptions, 
+            Compensation.WouldSucceedButNotCalled, 
+            label)
+    {
+    }
+
+    public GetHelper(Compensation.Options compensationOptions, string? label = null)
+        : this(Execution.ExpectToBeCalledAndSucceed, 
+            compensationOptions, 
+            label)
+    {
+    }
+
+    private GetHelper(Execution.Options executionOptions, Compensation.Options compensationOptions, string? label)
+        : base(executionOptions, compensationOptions, label)
+    {
+        ExpectedExecuteResult = new object();
+
+        ExecuteAsync = ExecutionOptions.IsNull ? null : _ExecuteAsync;
+        CompensateAsync = CompensationOptions.IsNull ? null : _CompensateAsync;
     }
 
     public override void AssertHelper()
     {
         base.AssertHelper();
-        Assert.Equal(ExpectCompensationToBeCalled, CompensationCalledWithResult);
+        Assert.Equal(CompensationOptions.ExpectToBeCalled, CompensationCalledWithResult);
     }
 
-    public async Task CompensateAsync(object result)
+    public override async Task<bool> IsExpectedCompensationAsync(Func<Task> actualCompensation)
     {
-        await Task.Delay(1).ConfigureAwait(false);
-        CompensationCalled = true;
-        CompensationCalledAt = DateTime.UtcNow;
-        CompensationCalledWithResult = Object.Equals(result, ExecuteResult);
-        if (ThrowOnCompensate)
-            throw new HelperCompensationException();
-    }
+        if (CompensateAsync is null || actualCompensation is null)
+            return false;
 
-    public async Task<object> ExecuteAsync()
-    {
-        await Task.Delay(1).ConfigureAwait(false);
-        ExecutionCalled = true;
-        if (ThrowOnExecute)
-            throw new HelperExecutionException();
-        return ExecuteResult;
-    }
+        var isExpectedCompensation = false;
 
-    // The original CompensateAsync is wrapped in another lambda in the compensator stack. This hack allows us to test if the expected method and
-    // actual method are the same by checking CompensationCalled.
-    public async Task WhileCompensationCalledResetAsync(Func<Task> action)
-    {
+        // store existing state
+        var rollbackExecutionCalled = ExecutionCalled;
         var rollbackCompensationCalled = CompensationCalled;
         var rollbackCompensationCalledAt = CompensationCalledAt;
         var rollbackCompensationCalledWithResult = CompensationCalledWithResult;
 
-        CompensationCalled = false;
-        CompensationCalledAt = null;
-        CompensationCalledWithResult = false;
-
         try
         {
-            await action().ConfigureAwait(false);
+            // reset state
+            ExecutionCalled = false;
+            CompensationCalled = false;
+            CompensationCalledAt = null;
+            CompensationCalledWithResult = false;
+
+            // call actual compensation
+            await actualCompensation().ConfigureAwait(false);
         }
-        finally
+        catch
         {
+            // we only care if it was called
+        }
+        finally 
+        { 
+            // if called, then is expected compensation
+            isExpectedCompensation = CompensationCalledWithResult;
+
+            // restore state
+            ExecutionCalled = rollbackExecutionCalled;
             CompensationCalled = rollbackCompensationCalled;
             CompensationCalledAt = rollbackCompensationCalledAt;
             CompensationCalledWithResult = rollbackCompensationCalledWithResult;
         }
+
+        return isExpectedCompensation;
+    }
+
+    private async Task _CompensateAsync(object result)
+    {
+        await Task.Delay(1).ConfigureAwait(false);
+        CompensationCalled = true;
+        CompensationCalledAt = DateTime.UtcNow;
+        CompensationCalledWithResult = Object.Equals(result, ExpectedExecuteResult);
+        if (CompensationOptions.ThrowsException)
+            throw new HelperCompensationException();
+    }
+
+    private async Task<object> _ExecuteAsync()
+    {
+        await Task.Delay(1).ConfigureAwait(false);
+        ExecutionCalled = true;
+        if (ExecutionOptions.ThrowsException)
+            throw new HelperExecutionException();
+        return ExpectedExecuteResult;
     }
 }

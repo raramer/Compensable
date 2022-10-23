@@ -1,4 +1,6 @@
-﻿namespace Compensable.Tests.CompensatorTests;
+﻿using Compensable.Tests.Helpers.Bases;
+
+namespace Compensable.Tests.CompensatorTests;
 
 public class CompensateAsync : TestBase
 {
@@ -11,8 +13,8 @@ public class CompensateAsync : TestBase
         var arrangedTagsAndCompensations = await ArrangeTagsAndCompensationsAsync(compensator).ConfigureAwait(false);
         var arrangedTag = arrangedTagsAndCompensations.OfType<Tag>().Skip(3).First();
 
-        var compensateHelper = new CompensateHelper(throwOnCompensate: true, expectCompensationToBeCalled: true);
-        await compensator.AddCompensationAsync(compensateHelper.CompensateAsync, arrangedTag).ConfigureAwait(false);
+        var addCompensationHelper = new AddCompensationHelper(Compensation.ExpectToBeCalledAndThrowException);
+        await compensator.AddCompensationAsync(addCompensationHelper.CompensateAsync, arrangedTag).ConfigureAwait(false);
 
         // act
         var exception = await Assert.ThrowsAsync<CompensationException>(async () =>
@@ -28,7 +30,7 @@ public class CompensateAsync : TestBase
             .SkipWhile(t => t != arrangedTag)
             .OfType<HelperBase>()
             .Reverse()
-            .Append(compensateHelper)
+            .Append(addCompensationHelper)
             .Reverse()
             .ToArray()).ConfigureAwait(false);
     }
@@ -104,8 +106,8 @@ public class CompensateAsync : TestBase
     {
         // arrange
         var compensator = new Compensator();
-        var compensateHelper = new CompensateHelper(throwOnCompensate: true);
-        await compensator.AddCompensationAsync(compensateHelper.CompensateAsync).ConfigureAwait(false);
+        var addCompensationHelper = new AddCompensationHelper(Compensation.ExpectToBeCalledAndThrowException);
+        await compensator.AddCompensationAsync(addCompensationHelper.CompensateAsync).ConfigureAwait(false);
         var status = CompensatorStatus.Compensating;
         await ArrangeStatusAsync(compensator, status).ConfigureAwait(false);
 
@@ -157,8 +159,8 @@ public class CompensateAsync : TestBase
     {
         // arrange
         var compensator = new Compensator();
-        var compensateHelper = new CompensateHelper(throwOnCompensate: true);
-        await compensator.AddCompensationAsync(compensateHelper.CompensateAsync).ConfigureAwait(false);
+        var addCompensationHelper = new AddCompensationHelper(Compensation.ExpectToBeCalledAndThrowException);
+        await compensator.AddCompensationAsync(addCompensationHelper.CompensateAsync).ConfigureAwait(false);
         var status = CompensatorStatus.FailedToExecute;
         await ArrangeStatusAsync(compensator, status).ConfigureAwait(false);
 

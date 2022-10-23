@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using Compensable.Tests.Helpers.Bases;
+using System.Collections.Concurrent;
 using System.Reflection;
 
 namespace Compensable.Tests.CompensatorTests;
@@ -22,9 +23,9 @@ public abstract class TestBase
 
             case CompensatorStatus.FailedToCompensate:
                 await compensator.AddCompensationAsync(() => throw new InvalidOperationException("Failed to compensate")).ConfigureAwait(false);
-                try 
-                { 
-                    await compensator.CompensateAsync().ConfigureAwait(false); 
+                try
+                {
+                    await compensator.CompensateAsync().ConfigureAwait(false);
                 }
                 catch
                 {
@@ -38,7 +39,6 @@ public abstract class TestBase
     {
         var foreachTag = await compensator.CreateTagAsync("foreachTag").ConfigureAwait(false);
 
-
         var doTag = await compensator.CreateTagAsync("doTag").ConfigureAwait(false);
 
         var doHelper1 = new DoHelper("doHelper1");
@@ -50,43 +50,40 @@ public abstract class TestBase
         var doHelper3 = new DoHelper("doHelper3");
         await compensator.DoAsync(doHelper3.ExecuteAsync, doHelper3.CompensateAsync).ConfigureAwait(false);
 
-
         var doIfTag = await compensator.CreateTagAsync("doIfTag").ConfigureAwait(false);
 
-        var doIfHelper1 = new DoIfHelper(testResult: true, "doIfHelper1");
+        var doIfHelper1 = new DoIfHelper(Test.ShouldBeCalledAndReturnTrue, "doIfHelper1");
         await compensator.DoIfAsync(doIfHelper1.TestAsync, doIfHelper1.ExecuteAsync, doIfHelper1.CompensateAsync).ConfigureAwait(false);
 
-        var doIfHelper2 = new DoIfHelper(testResult: true, "doIfHelper2");
+        var doIfHelper2 = new DoIfHelper(Test.ShouldBeCalledAndReturnTrue, "doIfHelper2");
         await compensator.DoIfAsync(doIfHelper2.TestAsync, doIfHelper2.ExecuteAsync, doIfHelper2.CompensateAsync).ConfigureAwait(false);
 
-        var doIfHelper3 = new DoIfHelper(testResult: false, "doIfHelper3");
+        var doIfHelper3 = new DoIfHelper(Test.ShouldBeCalledAndReturnFalse, "doIfHelper3");
         await compensator.DoIfAsync(doIfHelper3.TestAsync, doIfHelper3.ExecuteAsync, doIfHelper3.CompensateAsync, doIfTag).ConfigureAwait(false);
 
-        var doIfHelper4 = new DoIfHelper(testResult: true, "doIfHelper4");
+        var doIfHelper4 = new DoIfHelper(Test.ShouldBeCalledAndReturnTrue, "doIfHelper4");
         await compensator.DoIfAsync(doIfHelper4.TestAsync, doIfHelper4.ExecuteAsync, doIfHelper4.CompensateAsync, doIfTag).ConfigureAwait(false);
-
 
         var getTag1 = await compensator.CreateTagAsync("getTag1").ConfigureAwait(false);
         var getTag2 = await compensator.CreateTagAsync("getTag2").ConfigureAwait(false);
         var getTag3 = await compensator.CreateTagAsync("getTag3").ConfigureAwait(false);
 
-        var getHelper1 = new DoHelper("getHelper1");
-        await compensator.DoAsync(getHelper1.ExecuteAsync, getHelper1.CompensateAsync).ConfigureAwait(false);
+        var getHelper1 = new GetHelper("getHelper1");
+        await compensator.GetAsync(getHelper1.ExecuteAsync, getHelper1.CompensateAsync).ConfigureAwait(false);
 
-        var getHelper2 = new DoHelper("getHelper2");
-        await compensator.DoAsync(getHelper2.ExecuteAsync, getHelper2.CompensateAsync, getTag2).ConfigureAwait(false);
+        var getHelper2 = new GetHelper("getHelper2");
+        await compensator.GetAsync(getHelper2.ExecuteAsync, getHelper2.CompensateAsync, getTag2).ConfigureAwait(false);
 
-        var getHelper3 = new DoHelper("getHelper3");
-        await compensator.DoAsync(getHelper3.ExecuteAsync, getHelper3.CompensateAsync, getTag1).ConfigureAwait(false);
+        var getHelper3 = new GetHelper("getHelper3");
+        await compensator.GetAsync(getHelper3.ExecuteAsync, getHelper3.CompensateAsync, getTag1).ConfigureAwait(false);
 
-
-        var foreachHelper1 = new ForeachHelper("foreachHelper1",
+        var foreachHelper1 = new ForeachHelper("foreachHelper1").AddItems(
             new ItemHelper("itemHelper1"),
             new ItemHelper("itemHelper2"),
             new ItemHelper("itemHelper3"));
         await compensator.ForeachAsync(foreachHelper1.Items, foreachHelper1.ExecuteAsync, foreachHelper1.CompensateAsync).ConfigureAwait(false);
 
-        var foreachHelper2 = new ForeachHelper("foreachHelper2",
+        var foreachHelper2 = new ForeachHelper("foreachHelper2").AddItems(
             new ItemHelper("itemHelper4"),
             new ItemHelper("itemHelper5"),
             new ItemHelper("itemHelper6"));
@@ -97,7 +94,7 @@ public abstract class TestBase
             foreachHelper1,
             getHelper1, getTag3, getTag2, getHelper2, getTag1, getHelper3,
             doIfHelper2, doIfHelper1, doIfTag, doIfHelper4,
-            doHelper3, doTag, doHelper2, doHelper1, 
+            doHelper3, doTag, doHelper2, doHelper1,
             foreachHelper2, foreachTag,
         };
 
@@ -112,7 +109,7 @@ public abstract class TestBase
         {
             // assert message
             Assert.Equal(ExpectedMessages.WhileExecutingWhileCompensating(), compensationException.Message);
-            
+
             // assert while executing
             Assert.Equal(typeof(HelperExecutionException), compensationException.WhileExecuting.GetType());
             Assert.Equal(ExpectedMessages.ExecuteFailed, compensationException.WhileExecuting.Message);
@@ -145,19 +142,20 @@ public abstract class TestBase
 
     protected async Task AssertInternalCompensationOrderAsync(Compensator compensator, params HelperBase[] expectedOrderedItems)
     {
-        if (expectedOrderedItems?.Any(i => i is ForeachHelper) == true)
+        // make sure not null
+        expectedOrderedItems ??= new HelperBase[0];
+
+        // if specified, expand foreach helpers into items 
+        if (expectedOrderedItems.Any(i => i is ForeachHelper))
         {
             await AssertInternalCompensationOrderAsync(compensator, expectedOrderedItems
-                .SelectMany(i => i is ForeachHelper foreachHelper 
-                    ? foreachHelper.ExpectedCompensationOrder 
+                .SelectMany(i => i is ForeachHelper foreachHelper
+                    ? foreachHelper.GetExpectedCompensationOrder()
                     : new[] { i })
                 .ToArray())
                 .ConfigureAwait(false);
             return;
         }
-        
-        if (expectedOrderedItems == null)
-            expectedOrderedItems = new HelperBase[0];
 
         // use reflection to extract private Compenstor._taggedCompensations
         var internalTaggedCompensations = typeof(Compensator)
@@ -165,6 +163,7 @@ public abstract class TestBase
             .GetValue(compensator) as ConcurrentStack<(ConcurrentStack<Func<Task>> Compensations, Tag Tag)>
             ?? throw new Exception("Failed to get internal tagged compensations from compensator");
 
+        // get compensations
         var internalCompensations = internalTaggedCompensations
             .SelectMany(itc => itc.Compensations)
             .ToList();
@@ -179,58 +178,7 @@ public abstract class TestBase
             var actualCompensation = internalCompensations[i];
 
             Assert.NotNull(expectedItem);
-            if (expectedItem is GetHelper getHelper)
-            {
-                // internalCompensation is a parameterless function that wraps expectedItem.Compensate. We don't want to do weird stuff only for
-                // testing purposes. Instead call actualItem and check GetHelper.CompensationCalled.
-                Assert.NotNull(actualCompensation);
-
-                await getHelper.WhileCompensationCalledResetAsync(async () =>
-                {
-                    try
-                    {
-                        await actualCompensation().ConfigureAwait(false);
-                    }
-                    catch
-                    {
-                        // ignore exception, we only care if it was called
-                    }
-                    Assert.True(getHelper.CompensationCalled);
-                }).ConfigureAwait(false);
-            }
-            else if (expectedItem is ItemHelper itemHelper)
-            {
-                Assert.NotNull(actualCompensation);
-
-                await itemHelper.WhileCompensationCalledResetAsync(async () =>
-                {
-                    try
-                    {
-                        await actualCompensation().ConfigureAwait(false);
-                    }
-                    catch
-                    {
-                        // ignore exception, we only care if it was called
-                    }
-                    Assert.True(itemHelper.CompensationCalled);
-                }).ConfigureAwait(false);
-            }
-            else if (expectedItem is DoIfHelper doIfHelper)
-            {
-                Assert.Equal(doIfHelper.CompensateAsync, actualCompensation);
-            }
-            else if (expectedItem is DoHelper doHelper)
-            {
-                Assert.Equal(doHelper.CompensateAsync, actualCompensation);
-            }
-            else if (expectedItem is CompensateHelper compensateHelper)
-            {
-                Assert.Equal(compensateHelper.CompensateAsync, actualCompensation);
-            }
-            else
-            {
-                throw new Exception("Not a supported expected item");
-            }
+            Assert.True(await expectedItem.IsExpectedCompensationAsync(actualCompensation).ConfigureAwait(false));
         }
     }
 }
