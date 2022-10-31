@@ -4,42 +4,54 @@ namespace Compensable.Tests.Helpers;
 
 public class GetHelper : ExecuteCompensateHelperBase
 {
+    public Action<object>? Compensate { get; }
+
     public Func<object, Task>? CompensateAsync { get; }
+
+    public Func<object>? Execute { get; }
 
     public Func<Task<object>>? ExecuteAsync { get; }
 
     public object ExpectedExecuteResult { get; }
-    
+
     private bool CompensationCalledWithResult { get; set; }
 
     public GetHelper(string? label = null)
-        : this(Execution.ExpectToBeCalledAndSucceed, 
-            Compensation.WouldSucceedButNotCalled, 
+        : this(ExecutionOptions.ExpectToBeCalledAndSucceed,
+            CompensationOptions.WouldSucceedButNotCalled,
             label)
     {
     }
 
-    public GetHelper(Execution.Options executionOptions, string? label = null)
-        : this(executionOptions, 
-            Compensation.WouldSucceedButNotCalled, 
+    public GetHelper(ExecutionOptions executionOptions, string? label = null)
+        : this(executionOptions,
+            CompensationOptions.WouldSucceedButNotCalled,
             label)
     {
     }
 
-    public GetHelper(Compensation.Options compensationOptions, string? label = null)
-        : this(Execution.ExpectToBeCalledAndSucceed, 
-            compensationOptions, 
+    public GetHelper(CompensationOptions compensationOptions, string? label = null)
+        : this(ExecutionOptions.ExpectToBeCalledAndSucceed,
+            compensationOptions,
             label)
     {
     }
 
-    private GetHelper(Execution.Options executionOptions, Compensation.Options compensationOptions, string? label)
+    private GetHelper(ExecutionOptions executionOptions, CompensationOptions compensationOptions, string? label)
         : base(executionOptions, compensationOptions, label)
     {
         ExpectedExecuteResult = new object();
 
-        ExecuteAsync = ExecutionOptions.IsNull ? null : _ExecuteAsync;
-        CompensateAsync = CompensationOptions.IsNull ? null : _CompensateAsync;
+        if (!ExecutionOptions.IsNull)
+        {
+            Execute = _Execute;
+            ExecuteAsync = _ExecuteAsync;
+        }
+        if (!CompensationOptions.IsNull)
+        {
+            Compensate = _Compensate;
+            CompensateAsync = _CompensateAsync;
+        }
     }
 
     public override void AssertHelper()
@@ -76,8 +88,8 @@ public class GetHelper : ExecuteCompensateHelperBase
         {
             // we only care if it was called
         }
-        finally 
-        { 
+        finally
+        {
             // if called, then is expected compensation
             isExpectedCompensation = CompensationCalledWithResult;
 
@@ -91,22 +103,30 @@ public class GetHelper : ExecuteCompensateHelperBase
         return isExpectedCompensation;
     }
 
-    private async Task _CompensateAsync(object result)
+    private void _Compensate(object result)
     {
-        await Task.Delay(1).ConfigureAwait(false);
         CompensationCalled = true;
         CompensationCalledAt = DateTime.UtcNow;
         CompensationCalledWithResult = Object.Equals(result, ExpectedExecuteResult);
         if (CompensationOptions.ThrowsException)
             throw new HelperCompensationException();
     }
-
-    private async Task<object> _ExecuteAsync()
+    private async Task _CompensateAsync(object result)
     {
         await Task.Delay(1).ConfigureAwait(false);
+        _Compensate(result);
+    }
+
+    private object _Execute()
+    {
         ExecutionCalled = true;
         if (ExecutionOptions.ThrowsException)
             throw new HelperExecutionException();
         return ExpectedExecuteResult;
+    }
+    private async Task<object> _ExecuteAsync()
+    {
+        await Task.Delay(1).ConfigureAwait(false);
+        return _Execute();
     }
 }

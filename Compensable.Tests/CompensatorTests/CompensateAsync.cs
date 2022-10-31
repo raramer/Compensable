@@ -13,7 +13,7 @@ public class CompensateAsync : TestBase
         var arrangedTagsAndCompensations = await ArrangeTagsAndCompensationsAsync(compensator).ConfigureAwait(false);
         var arrangedTag = arrangedTagsAndCompensations.OfType<Tag>().Skip(3).First();
 
-        var addCompensationHelper = new AddCompensationHelper(Compensation.ExpectToBeCalledAndThrowException);
+        var addCompensationHelper = new AddCompensationHelper(CompensationOptions.ExpectToBeCalledAndThrowException);
         await compensator.AddCompensationAsync(addCompensationHelper.CompensateAsync, arrangedTag).ConfigureAwait(false);
 
         // act
@@ -106,7 +106,7 @@ public class CompensateAsync : TestBase
     {
         // arrange
         var compensator = new Compensator();
-        var addCompensationHelper = new AddCompensationHelper(Compensation.ExpectToBeCalledAndThrowException);
+        var addCompensationHelper = new AddCompensationHelper(CompensationOptions.ExpectToBeCalledAndThrowException);
         await compensator.AddCompensationAsync(addCompensationHelper.CompensateAsync).ConfigureAwait(false);
         var status = CompensatorStatus.Compensating;
         await ArrangeStatusAsync(compensator, status).ConfigureAwait(false);
@@ -159,7 +159,7 @@ public class CompensateAsync : TestBase
     {
         // arrange
         var compensator = new Compensator();
-        var addCompensationHelper = new AddCompensationHelper(Compensation.ExpectToBeCalledAndThrowException);
+        var addCompensationHelper = new AddCompensationHelper(CompensationOptions.ExpectToBeCalledAndThrowException);
         await compensator.AddCompensationAsync(addCompensationHelper.CompensateAsync).ConfigureAwait(false);
         var status = CompensatorStatus.FailedToExecute;
         await ArrangeStatusAsync(compensator, status).ConfigureAwait(false);

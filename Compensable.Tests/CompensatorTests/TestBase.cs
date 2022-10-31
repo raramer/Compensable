@@ -52,16 +52,16 @@ public abstract class TestBase
 
         var doIfTag = await compensator.CreateTagAsync("doIfTag").ConfigureAwait(false);
 
-        var doIfHelper1 = new DoIfHelper(Test.ShouldBeCalledAndReturnTrue, "doIfHelper1");
+        var doIfHelper1 = new DoIfHelper(TestOptions.ShouldBeCalledAndReturnTrue, "doIfHelper1");
         await compensator.DoIfAsync(doIfHelper1.TestAsync, doIfHelper1.ExecuteAsync, doIfHelper1.CompensateAsync).ConfigureAwait(false);
 
-        var doIfHelper2 = new DoIfHelper(Test.ShouldBeCalledAndReturnTrue, "doIfHelper2");
+        var doIfHelper2 = new DoIfHelper(TestOptions.ShouldBeCalledAndReturnTrue, "doIfHelper2");
         await compensator.DoIfAsync(doIfHelper2.TestAsync, doIfHelper2.ExecuteAsync, doIfHelper2.CompensateAsync).ConfigureAwait(false);
 
-        var doIfHelper3 = new DoIfHelper(Test.ShouldBeCalledAndReturnFalse, "doIfHelper3");
+        var doIfHelper3 = new DoIfHelper(TestOptions.ShouldBeCalledAndReturnFalse, "doIfHelper3");
         await compensator.DoIfAsync(doIfHelper3.TestAsync, doIfHelper3.ExecuteAsync, doIfHelper3.CompensateAsync, doIfTag).ConfigureAwait(false);
 
-        var doIfHelper4 = new DoIfHelper(Test.ShouldBeCalledAndReturnTrue, "doIfHelper4");
+        var doIfHelper4 = new DoIfHelper(TestOptions.ShouldBeCalledAndReturnTrue, "doIfHelper4");
         await compensator.DoIfAsync(doIfHelper4.TestAsync, doIfHelper4.ExecuteAsync, doIfHelper4.CompensateAsync, doIfTag).ConfigureAwait(false);
 
         var getTag1 = await compensator.CreateTagAsync("getTag1").ConfigureAwait(false);

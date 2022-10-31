@@ -21,44 +21,44 @@ public class ItemHelper : ExecuteCompensateHelperBase
 
     private bool CompensationCalledWithItem { get; set; }
 
-    private ItemEnumeration.Options EnumerationOptions { get; }
+    private ItemEnumerationOptions EnumerationOptions { get; }
     private bool ExecutionCalledWithItem { get; set; }
 
     private bool ItemEnumerated { get; set; }
 
     public ItemHelper(string? label = null)
-        : this(ItemEnumeration.ShouldBeCalledAndSucceed,
-              ItemExecution.ShouldBeCalledAndSucceed,
-              ItemCompensation.WouldSucceedButNotCalled,
+        : this(ItemEnumerationOptions.ShouldBeCalledAndSucceed,
+              ItemExecutionOptions.ShouldBeCalledAndSucceed,
+              ItemCompensationOptions.WouldSucceedButNotCalled,
               label)
     {
     }
 
-    public ItemHelper(ItemEnumeration.Options enumerationOptions, string? label = null)
+    public ItemHelper(ItemEnumerationOptions enumerationOptions, string? label = null)
         : this(enumerationOptions,
-              executionOptions: enumerationOptions.ExpectSuccess ? ItemExecution.ShouldBeCalledAndSucceed : ItemExecution.WouldSucceedButNotCalled,
-              ItemCompensation.WouldSucceedButNotCalled,
+              executionOptions: enumerationOptions.ExpectSuccess ? ItemExecutionOptions.ShouldBeCalledAndSucceed : ItemExecutionOptions.WouldSucceedButNotCalled,
+              ItemCompensationOptions.WouldSucceedButNotCalled,
               label)
     {
     }
 
-    public ItemHelper(ItemExecution.Options executionOptions, string? label = null)
-        : this(ItemEnumeration.ShouldBeCalledAndSucceed,
+    public ItemHelper(ItemExecutionOptions executionOptions, string? label = null)
+        : this(ItemEnumerationOptions.ShouldBeCalledAndSucceed,
               executionOptions,
-              ItemCompensation.WouldSucceedButNotCalled,
+              ItemCompensationOptions.WouldSucceedButNotCalled,
               label)
     {
     }
 
-    public ItemHelper(ItemCompensation.Options compensationOptions, string? label = null)
-        : this(ItemEnumeration.ShouldBeCalledAndSucceed,
-              ItemExecution.ShouldBeCalledAndSucceed,
+    public ItemHelper(ItemCompensationOptions compensationOptions, string? label = null)
+        : this(ItemEnumerationOptions.ShouldBeCalledAndSucceed,
+              ItemExecutionOptions.ShouldBeCalledAndSucceed,
               compensationOptions,
               label)
     {
     }
 
-    private ItemHelper(ItemEnumeration.Options enumerationOptions, ItemExecution.Options executionOptions, ItemCompensation.Options compensationOptions, string? label)
+    private ItemHelper(ItemEnumerationOptions enumerationOptions, ItemExecutionOptions executionOptions, ItemCompensationOptions compensationOptions, string? label)
         : base(executionOptions, compensationOptions, label)
     {
         ExpectedItem = new object();
@@ -74,9 +74,8 @@ public class ItemHelper : ExecuteCompensateHelperBase
         Assert.Equal(CompensationOptions.ExpectToBeCalled, CompensationCalledWithItem);
     }
 
-    public async Task CompensateAsync(object item)
+    public void Compensate(object item)
     {
-        await Task.Delay(1).ConfigureAwait(false);
         CompensationCalled = true;
         CompensationCalledAt = DateTime.UtcNow;
         CompensationCalledWithItem = Object.Equals(item, ExpectedItem);
@@ -84,9 +83,8 @@ public class ItemHelper : ExecuteCompensateHelperBase
             throw new HelperCompensationException();
     }
 
-    public async Task ExecuteAsync(object item)
+    public void Execute(object item)
     {
-        await Task.Delay(1).ConfigureAwait(false);
         ExecutionCalled = true;
         ExecutionCalledWithItem = Object.Equals(item, ExpectedItem);
         if (ExecutionOptions.ThrowsException)

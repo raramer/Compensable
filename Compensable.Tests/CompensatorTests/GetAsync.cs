@@ -9,7 +9,7 @@ public class GetAsync : TestBase
         var compensator = new Compensator();
         var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
 
-        var getHelper = new GetHelper(Compensation.ExpectToBeCalledAndThrowException);
+        var getHelper = new GetHelper(CompensationOptions.ExpectToBeCalledAndThrowException);
         await compensator.GetAsync(getHelper.ExecuteAsync, getHelper.CompensateAsync, tag).ConfigureAwait(false);
 
         // act
@@ -34,7 +34,7 @@ public class GetAsync : TestBase
         var compensator = new Compensator();
         var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
 
-        var getHelper = new GetHelper(Compensation.IsNull);
+        var getHelper = new GetHelper(CompensationOptions.Null);
 
         // act
         var gotResult = await compensator.GetAsync(getHelper.ExecuteAsync, getHelper.CompensateAsync, tag).ConfigureAwait(false);
@@ -56,7 +56,7 @@ public class GetAsync : TestBase
         var compensator = new Compensator();
         var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
 
-        var getHelper = new GetHelper(Compensation.WouldThrowExceptionButNotCalled);
+        var getHelper = new GetHelper(CompensationOptions.WouldThrowExceptionButNotCalled);
 
         // act
         var gotResult = await compensator.GetAsync(getHelper.ExecuteAsync, getHelper.CompensateAsync, tag).ConfigureAwait(false);
@@ -78,7 +78,7 @@ public class GetAsync : TestBase
         var compensator = new Compensator();
         var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
 
-        var getHelper = new GetHelper(Execution.ExpectToBeCalledAndThrowException);
+        var getHelper = new GetHelper(ExecutionOptions.ExpectToBeCalledAndThrowException);
 
         // act
         var exception = await Assert.ThrowsAsync<HelperExecutionException>(async () =>
@@ -102,7 +102,7 @@ public class GetAsync : TestBase
         var compensator = new Compensator();
         var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
 
-        var getHelper = new GetHelper(Execution.IsNull);
+        var getHelper = new GetHelper(ExecutionOptions.Null);
 
         // act
         var exception = await Assert.ThrowsAsync<ArgumentNullException>(async () =>
@@ -150,7 +150,7 @@ public class GetAsync : TestBase
         var status = CompensatorStatus.Compensated;
         await ArrangeStatusAsync(compensator, status).ConfigureAwait(false);
 
-        var getHelper = new GetHelper(Execution.WouldSucceedButNotCalled);
+        var getHelper = new GetHelper(ExecutionOptions.WouldSucceedButNotCalled);
 
         // act
         var exception = await Assert.ThrowsAsync<CompensatorStatusException>(async () =>
@@ -172,7 +172,7 @@ public class GetAsync : TestBase
         var status = CompensatorStatus.FailedToExecute;
         await ArrangeStatusAsync(compensator, status).ConfigureAwait(false);
 
-        var getHelper = new GetHelper(Execution.WouldSucceedButNotCalled);
+        var getHelper = new GetHelper(ExecutionOptions.WouldSucceedButNotCalled);
 
         // act
         var exception = await Assert.ThrowsAsync<CompensatorStatusException>(async () =>
@@ -194,7 +194,7 @@ public class GetAsync : TestBase
         var status = CompensatorStatus.FailedToCompensate;
         await ArrangeStatusAsync(compensator, status).ConfigureAwait(false);
 
-        var getHelper = new GetHelper(Execution.WouldSucceedButNotCalled);
+        var getHelper = new GetHelper(ExecutionOptions.WouldSucceedButNotCalled);
 
         // act
         var exception = await Assert.ThrowsAsync<CompensatorStatusException>(async () =>
@@ -216,7 +216,7 @@ public class GetAsync : TestBase
         var status = CompensatorStatus.Compensating;
         await ArrangeStatusAsync(compensator, status).ConfigureAwait(false);
 
-        var getHelper = new GetHelper(Execution.WouldSucceedButNotCalled);
+        var getHelper = new GetHelper(ExecutionOptions.WouldSucceedButNotCalled);
 
         // act
         var exception = await Assert.ThrowsAsync<CompensatorStatusException>(async () =>
@@ -236,7 +236,7 @@ public class GetAsync : TestBase
         var compensator = new Compensator();
         var unusedTag = await compensator.CreateTagAsync().ConfigureAwait(false);
 
-        var getHelper = new GetHelper(Execution.WouldSucceedButNotCalled);
+        var getHelper = new GetHelper(ExecutionOptions.WouldSucceedButNotCalled);
         var tag = new Tag();
 
         // act

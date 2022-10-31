@@ -2,50 +2,55 @@
 
 public class DoIfHelper : DoHelper
 {
+    public Func<bool>? Test { get; }
     public Func<Task<bool>>? TestAsync { get; }
 
     private bool TestCalled { get; set; }
 
-    private Test.Options TestOptions { get; }
+    private TestOptions TestOptions { get; }
 
     public DoIfHelper(string? label = null)
-        : this(Test.ShouldBeCalledAndReturnTrue, 
-            Execution.ExpectToBeCalledAndSucceed, 
-            Compensation.WouldSucceedButNotCalled, 
+        : this(TestOptions.ShouldBeCalledAndReturnTrue,
+            ExecutionOptions.ExpectToBeCalledAndSucceed,
+            CompensationOptions.WouldSucceedButNotCalled, 
             label)
     {
     }
 
-    public DoIfHelper(Test.Options testOptions, string? label = null)
+    public DoIfHelper(TestOptions testOptions, string? label = null)
         : this(testOptions,
-            executionOptions: testOptions.ExpectTrueResult ? Execution.ExpectToBeCalledAndSucceed : Execution.WouldSucceedButNotCalled,
-            compensationOptions: testOptions.ExpectTrueResult ? Compensation.ExpectToBeCalledAndSucceed : Compensation.WouldSucceedButNotCalled,
+            executionOptions: testOptions.ExpectTrueResult ? Options.ExecutionOptions.ExpectToBeCalledAndSucceed : Options.ExecutionOptions.WouldSucceedButNotCalled,
+            compensationOptions: testOptions.ExpectTrueResult ? Options.CompensationOptions.ExpectToBeCalledAndSucceed : Options.CompensationOptions.WouldSucceedButNotCalled,
             label)
     {
     }
 
-    public DoIfHelper(Execution.Options executionOptions, string? label = null)
-        : this(testOptions: executionOptions.IsNull ? Test.WouldSucceedButNotCalled : Test.ShouldBeCalledAndReturnTrue, 
-            executionOptions, 
-            Compensation.WouldSucceedButNotCalled,
+    public DoIfHelper(ExecutionOptions executionOptions, string? label = null)
+        : this(testOptions: executionOptions.IsNull ? Options.TestOptions.WouldSucceedButNotCalled : Options.TestOptions.ShouldBeCalledAndReturnTrue, 
+            executionOptions,
+            CompensationOptions.WouldSucceedButNotCalled,
             label)
     {
     }
 
-    public DoIfHelper(Compensation.Options compensationOptions, string? label = null)
-        : this(Test.ShouldBeCalledAndReturnTrue, 
-            Execution.ExpectToBeCalledAndSucceed, 
+    public DoIfHelper(CompensationOptions compensationOptions, string? label = null)
+        : this(TestOptions.ShouldBeCalledAndReturnTrue,
+            ExecutionOptions.ExpectToBeCalledAndSucceed, 
             compensationOptions, 
             label)
     {
     }
 
-    private DoIfHelper(Test.Options testOptions, Execution.Options executionOptions, Compensation.Options compensationOptions, string? label) 
+    private DoIfHelper(TestOptions testOptions, ExecutionOptions executionOptions, CompensationOptions compensationOptions, string? label) 
         : base(executionOptions, compensationOptions, label)
     {
         TestOptions = testOptions;
 
-        TestAsync = TestOptions.IsNull ? null : _TestAsync;
+        if (!TestOptions.IsNull)
+        {
+            Test = _Test;
+            TestAsync = _TestAsync;
+        }
     }
 
     public override void AssertHelper()
@@ -54,14 +59,16 @@ public class DoIfHelper : DoHelper
         base.AssertHelper();
     }
 
-    private async Task<bool> _TestAsync()
-    {
-        await Task.Delay(1).ConfigureAwait(false);
+    private bool _Test()
+    { 
         TestCalled = true;
         if (TestOptions.ThrowsException)
             throw new HelperTestException();
         return TestOptions.Result;
     }
-
-
+    private async Task<bool> _TestAsync()
+    {
+        await Task.Delay(1).ConfigureAwait(false);
+        return _Test();
+    }
 }

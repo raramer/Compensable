@@ -4,9 +4,9 @@ public abstract class ExecuteCompensateHelperBase : CompensateHelperBase
 {
     protected bool ExecutionCalled { get; set; }
 
-    protected Execution.Options ExecutionOptions { get; }
+    protected ExecutionOptions ExecutionOptions { get; }
 
-    protected ExecuteCompensateHelperBase(Execution.Options executionOptions, Compensation.Options compensationOptions, string? label) 
+    protected ExecuteCompensateHelperBase(ExecutionOptions executionOptions, CompensationOptions compensationOptions, string? label) 
         : base(compensationOptions, label)
     {
         ExecutionOptions = executionOptions;

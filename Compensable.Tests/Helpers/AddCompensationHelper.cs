@@ -4,17 +4,23 @@ namespace Compensable.Tests.Helpers;
 
 public class AddCompensationHelper : CompensateHelperBase
 {
+    public Action? Compensate { get; }
+
     public Func<Task>? CompensateAsync { get; }
 
     public AddCompensationHelper(string? label = null) 
-        : this(Compensation.WouldSucceedButNotCalled, label)
+        : this(CompensationOptions.WouldSucceedButNotCalled, label)
     {
     } 
 
-    public AddCompensationHelper(Compensation.Options compensation, string? label = null) 
-        : base(compensation, label)
+    public AddCompensationHelper(CompensationOptions compensationOptions, string? label = null) 
+        : base(compensationOptions, label)
     {
-        CompensateAsync = CompensationOptions.IsNull ? null : _CompensateAsync;
+        if (!CompensationOptions.IsNull)
+        {
+            Compensate = _Compensate;
+            CompensateAsync = _CompensateAsync;
+        }
     }
 
     public override Task<bool> IsExpectedCompensationAsync(Func<Task> actualCompensation)
@@ -22,12 +28,16 @@ public class AddCompensationHelper : CompensateHelperBase
         return Task.FromResult(CompensateAsync is not null && actualCompensation is not null && CompensateAsync == actualCompensation);
     }
 
-    private async Task _CompensateAsync()
+    private void _Compensate()
     {
-        await Task.Delay(1).ConfigureAwait(false);
         CompensationCalled = true;
         CompensationCalledAt = DateTime.UtcNow;
         if (CompensationOptions.ThrowsException)
             throw new HelperCompensationException();
+    }
+    private async Task _CompensateAsync()
+    {
+        await Task.Delay(1).ConfigureAwait(false);
+        _Compensate();
     }
 }
