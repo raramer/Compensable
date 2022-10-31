@@ -6,9 +6,9 @@ public abstract class CompensateHelperBase : HelperBase
     
     protected DateTime? CompensationCalledAt { get; set; }
     
-    protected Compensation.Options CompensationOptions { get; }
+    protected CompensationOptions CompensationOptions { get; }
 
-    protected CompensateHelperBase(Compensation.Options compensationOptions, string? label = null) 
+    protected CompensateHelperBase(CompensationOptions compensationOptions, string? label = null) 
         : base(label)
     {
         CompensationOptions = compensationOptions;

@@ -9,7 +9,7 @@ public class DoAsync : TestBase
         var compensator = new Compensator();
         var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
 
-        var doHelper = new DoHelper(Compensation.ExpectToBeCalledAndThrowException);
+        var doHelper = new DoHelper(CompensationOptions.ExpectToBeCalledAndThrowException);
         await compensator.DoAsync(doHelper.ExecuteAsync, doHelper.CompensateAsync, tag).ConfigureAwait(false);
 
         // act
@@ -34,7 +34,7 @@ public class DoAsync : TestBase
         var compensator = new Compensator();
         var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
 
-        var doHelper = new DoHelper(Compensation.IsNull);
+        var doHelper = new DoHelper(CompensationOptions.Null);
 
         // act
         await compensator.DoAsync(doHelper.ExecuteAsync, doHelper.CompensateAsync, tag).ConfigureAwait(false);
@@ -54,7 +54,7 @@ public class DoAsync : TestBase
         var compensator = new Compensator();
         var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
 
-        var doHelper = new DoHelper(Compensation.WouldThrowExceptionButNotCalled);
+        var doHelper = new DoHelper(CompensationOptions.WouldThrowExceptionButNotCalled);
 
         // act
         await compensator.DoAsync(doHelper.ExecuteAsync, doHelper.CompensateAsync, tag).ConfigureAwait(false);
@@ -74,7 +74,7 @@ public class DoAsync : TestBase
         var compensator = new Compensator();
         var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
 
-        var doHelper = new DoHelper(Execution.ExpectToBeCalledAndThrowException);
+        var doHelper = new DoHelper(ExecutionOptions.ExpectToBeCalledAndThrowException);
 
         // act
         var exception = await Assert.ThrowsAsync<HelperExecutionException>(async () =>
@@ -98,7 +98,7 @@ public class DoAsync : TestBase
         var compensator = new Compensator();
         var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
 
-        var doHelper = new DoHelper(Execution.IsNull);
+        var doHelper = new DoHelper(ExecutionOptions.Null);
 
         // act
         var exception = await Assert.ThrowsAsync<ArgumentNullException>(async () =>
@@ -144,7 +144,7 @@ public class DoAsync : TestBase
         var status = CompensatorStatus.Compensated;
         await ArrangeStatusAsync(compensator, status).ConfigureAwait(false);
 
-        var doHelper = new DoHelper(Execution.WouldSucceedButNotCalled);
+        var doHelper = new DoHelper(ExecutionOptions.WouldSucceedButNotCalled);
 
         // act
         var exception = await Assert.ThrowsAsync<CompensatorStatusException>(async () =>
@@ -166,7 +166,7 @@ public class DoAsync : TestBase
         var status = CompensatorStatus.Compensating;
         await ArrangeStatusAsync(compensator, status).ConfigureAwait(false);
 
-        var doHelper = new DoHelper(Execution.WouldSucceedButNotCalled);
+        var doHelper = new DoHelper(ExecutionOptions.WouldSucceedButNotCalled);
 
         // act
         var exception = await Assert.ThrowsAsync<CompensatorStatusException>(async () =>
@@ -188,7 +188,7 @@ public class DoAsync : TestBase
         var status = CompensatorStatus.FailedToCompensate;
         await ArrangeStatusAsync(compensator, status).ConfigureAwait(false);
 
-        var doHelper = new DoHelper(Execution.WouldSucceedButNotCalled);
+        var doHelper = new DoHelper(ExecutionOptions.WouldSucceedButNotCalled);
 
         // act
         var exception = await Assert.ThrowsAsync<CompensatorStatusException>(async () =>
@@ -210,7 +210,7 @@ public class DoAsync : TestBase
         var status = CompensatorStatus.FailedToExecute;
         await ArrangeStatusAsync(compensator, status).ConfigureAwait(false);
 
-        var doHelper = new DoHelper(Execution.WouldSucceedButNotCalled);
+        var doHelper = new DoHelper(ExecutionOptions.WouldSucceedButNotCalled);
 
         // act
         var exception = await Assert.ThrowsAsync<CompensatorStatusException>(async () =>
@@ -230,7 +230,7 @@ public class DoAsync : TestBase
         var compensator = new Compensator();
         var unusedTag = await compensator.CreateTagAsync().ConfigureAwait(false);
 
-        var doHelper = new DoHelper(Execution.WouldSucceedButNotCalled);
+        var doHelper = new DoHelper(ExecutionOptions.WouldSucceedButNotCalled);
         var tag = new Tag();
 
         // act

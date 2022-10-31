@@ -10,8 +10,8 @@ public class ForeachAsync : TestBase
         var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
 
         var foreachHelper = new ForeachHelper().AddItems(
-            new ItemHelper(ItemCompensation.ShouldBeCalledAndThrowException),
-            new ItemHelper(ItemCompensation.ShouldBeCalledAndSucceed));
+            new ItemHelper(ItemCompensationOptions.ShouldBeCalledAndThrowException),
+            new ItemHelper(ItemCompensationOptions.ShouldBeCalledAndSucceed));
         await compensator.ForeachAsync(foreachHelper.Items, foreachHelper.ExecuteAsync, foreachHelper.CompensateAsync, tag).ConfigureAwait(false);
 
         // act
@@ -35,7 +35,7 @@ public class ForeachAsync : TestBase
         // arrange
         var compensator = new Compensator();
         var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
-        var foreachHelper = new ForeachHelper(Foreach.CompensationIsNull).AddItems(
+        var foreachHelper = new ForeachHelper(ForeachOptions.CompensationNull).AddItems(
             new ItemHelper(),
             new ItemHelper(),
             new ItemHelper());
@@ -58,7 +58,7 @@ public class ForeachAsync : TestBase
         var compensator = new Compensator();
         var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
         var foreachHelper = new ForeachHelper().AddItems(
-            new ItemHelper(ItemCompensation.WouldThrowExceptionButNotCalled),
+            new ItemHelper(ItemCompensationOptions.WouldThrowExceptionButNotCalled),
             new ItemHelper(),
             new ItemHelper());
 
@@ -80,9 +80,9 @@ public class ForeachAsync : TestBase
         var compensator = new Compensator();
         var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
         var foreachHelper = new ForeachHelper().AddItems(
-            new ItemHelper(ItemCompensation.ShouldBeCalledAndSucceed),
-            new ItemHelper(ItemExecution.ShouldBeCalledAndThrowException),
-            new ItemHelper(ItemEnumeration.WouldSucceedButNotCalled));
+            new ItemHelper(ItemCompensationOptions.ShouldBeCalledAndSucceed),
+            new ItemHelper(ItemExecutionOptions.ShouldBeCalledAndThrowException),
+            new ItemHelper(ItemEnumerationOptions.WouldSucceedButNotCalled));
 
         // act
         var exception = await Assert.ThrowsAsync<HelperExecutionException>(async () =>
@@ -105,10 +105,10 @@ public class ForeachAsync : TestBase
         // arrange
         var compensator = new Compensator();
         var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
-        var foreachHelper = new ForeachHelper(Foreach.ExecutionIsNull).AddItems(
-            new ItemHelper(ItemEnumeration.WouldSucceedButNotCalled),
-            new ItemHelper(ItemEnumeration.WouldSucceedButNotCalled),
-            new ItemHelper(ItemEnumeration.WouldSucceedButNotCalled));
+        var foreachHelper = new ForeachHelper(ForeachOptions.ExecutionNull).AddItems(
+            new ItemHelper(ItemEnumerationOptions.WouldSucceedButNotCalled),
+            new ItemHelper(ItemEnumerationOptions.WouldSucceedButNotCalled),
+            new ItemHelper(ItemEnumerationOptions.WouldSucceedButNotCalled));
 
         // act
         var exception = await Assert.ThrowsAsync<ArgumentNullException>(async () =>
@@ -154,9 +154,9 @@ public class ForeachAsync : TestBase
         var compensator = new Compensator();
         var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
         var foreachHelper = new ForeachHelper().AddItems(
-            new ItemHelper(ItemCompensation.ShouldBeCalledAndSucceed),
-            new ItemHelper(ItemEnumeration.ShouldBeCalledAndThrowException),
-            new ItemHelper(ItemEnumeration.WouldSucceedButNotCalled));
+            new ItemHelper(ItemCompensationOptions.ShouldBeCalledAndSucceed),
+            new ItemHelper(ItemEnumerationOptions.ShouldBeCalledAndThrowException),
+            new ItemHelper(ItemEnumerationOptions.WouldSucceedButNotCalled));
 
         // act
         var exception = await Assert.ThrowsAsync<HelperItemException>(async () =>
@@ -179,10 +179,10 @@ public class ForeachAsync : TestBase
         // arrange
         var compensator = new Compensator();
         var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
-        var foreachHelper = new ForeachHelper(Foreach.ItemsIsNull).AddItems(
-            new ItemHelper(ItemEnumeration.WouldSucceedButNotCalled),
-            new ItemHelper(ItemEnumeration.WouldSucceedButNotCalled),
-            new ItemHelper(ItemEnumeration.WouldSucceedButNotCalled));
+        var foreachHelper = new ForeachHelper(ForeachOptions.ItemsNull).AddItems(
+            new ItemHelper(ItemEnumerationOptions.WouldSucceedButNotCalled),
+            new ItemHelper(ItemEnumerationOptions.WouldSucceedButNotCalled),
+            new ItemHelper(ItemEnumerationOptions.WouldSucceedButNotCalled));
 
         // act
         var exception = await Assert.ThrowsAsync<ArgumentNullException>(async () =>
@@ -229,9 +229,9 @@ public class ForeachAsync : TestBase
         await ArrangeStatusAsync(compensator, status).ConfigureAwait(false);
 
         var foreachHelper = new ForeachHelper().AddItems(
-            new ItemHelper(ItemEnumeration.WouldSucceedButNotCalled),
-            new ItemHelper(ItemEnumeration.WouldSucceedButNotCalled),
-            new ItemHelper(ItemEnumeration.WouldSucceedButNotCalled));
+            new ItemHelper(ItemEnumerationOptions.WouldSucceedButNotCalled),
+            new ItemHelper(ItemEnumerationOptions.WouldSucceedButNotCalled),
+            new ItemHelper(ItemEnumerationOptions.WouldSucceedButNotCalled));
 
         // act
         var exception = await Assert.ThrowsAsync<CompensatorStatusException>(async () =>
@@ -254,9 +254,9 @@ public class ForeachAsync : TestBase
         await ArrangeStatusAsync(compensator, status).ConfigureAwait(false);
 
         var foreachHelper = new ForeachHelper().AddItems(
-            new ItemHelper(ItemEnumeration.WouldSucceedButNotCalled),
-            new ItemHelper(ItemEnumeration.WouldSucceedButNotCalled),
-            new ItemHelper(ItemEnumeration.WouldSucceedButNotCalled));
+            new ItemHelper(ItemEnumerationOptions.WouldSucceedButNotCalled),
+            new ItemHelper(ItemEnumerationOptions.WouldSucceedButNotCalled),
+            new ItemHelper(ItemEnumerationOptions.WouldSucceedButNotCalled));
 
         // act
         var exception = await Assert.ThrowsAsync<CompensatorStatusException>(async () =>
@@ -279,9 +279,9 @@ public class ForeachAsync : TestBase
         await ArrangeStatusAsync(compensator, status).ConfigureAwait(false);
 
         var foreachHelper = new ForeachHelper().AddItems(
-            new ItemHelper(ItemEnumeration.WouldSucceedButNotCalled),
-            new ItemHelper(ItemEnumeration.WouldSucceedButNotCalled),
-            new ItemHelper(ItemEnumeration.WouldSucceedButNotCalled));
+            new ItemHelper(ItemEnumerationOptions.WouldSucceedButNotCalled),
+            new ItemHelper(ItemEnumerationOptions.WouldSucceedButNotCalled),
+            new ItemHelper(ItemEnumerationOptions.WouldSucceedButNotCalled));
 
         // act
         var exception = await Assert.ThrowsAsync<CompensatorStatusException>(async () =>
@@ -304,9 +304,9 @@ public class ForeachAsync : TestBase
         await ArrangeStatusAsync(compensator, status).ConfigureAwait(false);
 
         var foreachHelper = new ForeachHelper().AddItems(
-            new ItemHelper(ItemEnumeration.WouldSucceedButNotCalled),
-            new ItemHelper(ItemEnumeration.WouldSucceedButNotCalled),
-            new ItemHelper(ItemEnumeration.WouldSucceedButNotCalled));
+            new ItemHelper(ItemEnumerationOptions.WouldSucceedButNotCalled),
+            new ItemHelper(ItemEnumerationOptions.WouldSucceedButNotCalled),
+            new ItemHelper(ItemEnumerationOptions.WouldSucceedButNotCalled));
 
         // act
         var exception = await Assert.ThrowsAsync<CompensatorStatusException>(async () =>
@@ -326,9 +326,9 @@ public class ForeachAsync : TestBase
         var compensator = new Compensator();
         var unusedTag = await compensator.CreateTagAsync().ConfigureAwait(false);
         var foreachHelper = new ForeachHelper().AddItems(
-            new ItemHelper(ItemEnumeration.WouldSucceedButNotCalled),
-            new ItemHelper(ItemEnumeration.WouldSucceedButNotCalled),
-            new ItemHelper(ItemEnumeration.WouldSucceedButNotCalled));
+            new ItemHelper(ItemEnumerationOptions.WouldSucceedButNotCalled),
+            new ItemHelper(ItemEnumerationOptions.WouldSucceedButNotCalled),
+            new ItemHelper(ItemEnumerationOptions.WouldSucceedButNotCalled));
         var tag = new Tag();
 
         // act
