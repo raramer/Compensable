@@ -4,7 +4,7 @@ internal class Tags
 {
     internal async Task Example()
     {
-        var compensator = new Compensator();
+        var compensator = new AsyncCompensator();
 
         // create tag
         var tag = await compensator.CreateTagAsync();

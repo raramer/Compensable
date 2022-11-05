@@ -2,7 +2,7 @@
 
 internal class Steps
 {
-    private Compensator? compensator = null;
+    private AsyncCompensator? compensator = null;
 
     #pragma warning disable CS8602
     internal async Task AddCompensationAsync(bool compensate)

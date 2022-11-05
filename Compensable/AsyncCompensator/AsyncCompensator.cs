@@ -4,12 +4,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Compensable.Tests")]
-
 namespace Compensable
 {
-    [Obsolete(@"Use ""AsyncCompensator"" instead.  ""Compensator"" will be synchronous in a future release.")]
-    public sealed partial class Compensator
+    public sealed partial class AsyncCompensator
     {
         private readonly CancellationToken _cancellationToken;
         private readonly SemaphoreSlim _compensationLock;
@@ -19,11 +16,11 @@ namespace Compensable
 
         public CompensatorStatus Status { get; private set; }
 
-        public Compensator() : this(CancellationToken.None)
+        public AsyncCompensator() : this(CancellationToken.None)
         {
         }
 
-        public Compensator(CancellationToken cancellationToken)
+        public AsyncCompensator(CancellationToken cancellationToken)
         {
             _cancellationToken = cancellationToken;
             _compensationLock = new SemaphoreSlim(1, 1);

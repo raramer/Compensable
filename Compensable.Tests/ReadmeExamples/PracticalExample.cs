@@ -18,7 +18,7 @@ internal class PracticalExample
         string[] adminAliasAddresses)
     {
         // define a new compensator
-        var compensator = new Compensator();
+        var compensator = new AsyncCompensator();
 
         // define a tag
         var deleteFromRepositoryTag = await compensator.CreateTagAsync();
