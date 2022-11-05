@@ -21,7 +21,8 @@ dotnet add package Compensable
 1. Define a compensator.
 
    ```csharp
-   var compensator = new Compensator();
+   // using Compensable;
+   var compensator = new AsyncCompensator();
    ```
 
 2. Execute the steps of your workflow in the context of the compensator.  
@@ -45,7 +46,7 @@ dotnet add package Compensable
 
    * **GetAsync** - executes a step that returns a *result*.  
    
-     Its compensation can optionally define a *_result* parameter that is equivalent to *result*, but will be unaffected if *result* is reassigned.
+     Its compensation can optionally define a *_result* parameter that is equivalent to *result*, but will be unaffected if *result* is reassigned.  Be aware that if *result* is an object whose properties are reassigned, the *compensation* will be affected as well.
      
      ```csharp
      var result = await compensator.GetAsync(
@@ -169,7 +170,7 @@ This example creates an email service on an async email platform and stores a re
        string[] adminAliasAddresses)
    {
        // define a new compensator
-       var compensator = new Compensator();
+       var compensator = new AsyncCompensator();
 
        // define a tag
        var deleteFromRepositoryTag = await compensator.CreateTagAsync();
