@@ -1,6 +1,6 @@
 ﻿using Compensable.Tests.Extensions;
 
-namespace Compensable.Tests.CompensationExceptionTests;
+namespace Compensable.Tests.ExceptionTests;
 
 public class CompensationExceptionTests
 {
