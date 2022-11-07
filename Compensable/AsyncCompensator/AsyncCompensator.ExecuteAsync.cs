@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Compensable
 {
-	partial class AsyncCompensator
+    partial class AsyncCompensator
     {
 		private async Task ExecuteAsync(Action validation, Func<Task> execution)
 		{
