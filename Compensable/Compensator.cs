@@ -4,8 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Compensable.Tests")]
-
 namespace Compensable
 {
     [Obsolete(@"Use ""AsyncCompensator"" instead.  ""Compensator"" will be synchronous in a future release.")]

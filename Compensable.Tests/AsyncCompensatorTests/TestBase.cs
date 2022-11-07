@@ -157,11 +157,16 @@ public abstract class TestBase
             return;
         }
 
-        // use reflection to extract private Compenstor._taggedCompensations
-        var internalTaggedCompensations = typeof(AsyncCompensator)
+        // use reflection to extract tagged compensations
+        var compensationStack = typeof(AsyncCompensator)
+            .GetField("_compensationStack", BindingFlags.Instance | BindingFlags.NonPublic)?
+            .GetValue(compensator) as CompensationStack<Func<Task>>
+            ?? throw new Exception("Failed to get internal compensation stack from compensator");
+
+        var internalTaggedCompensations = typeof(CompensationStack<Func<Task>>)
             .GetField("_taggedCompensations", BindingFlags.Instance | BindingFlags.NonPublic)?
-            .GetValue(compensator) as ConcurrentStack<(ConcurrentStack<Func<Task>> Compensations, Tag Tag)>
-            ?? throw new Exception("Failed to get internal tagged compensations from compensator");
+            .GetValue(compensationStack) as ConcurrentStack<(ConcurrentStack<Func<Task>> Compensations, Tag Tag)>
+            ?? throw new Exception("Failed to get internal tagged compensations from compensation stack");
 
         // get compensations
         var internalCompensations = internalTaggedCompensations

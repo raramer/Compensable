@@ -8,6 +8,6 @@ namespace Compensable
             => await CreateTagAsync(default(string)).ConfigureAwait(false);
 
         internal async Task<Tag> CreateTagAsync(string label)
-            => await ExecuteAsync(() => AddTagToStack(new Tag(label))).ConfigureAwait(false);
+            => await ExecuteAsync(() => _compensationStack.AddTag(label)).ConfigureAwait(false);
     }
 }

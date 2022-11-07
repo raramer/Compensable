@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,7 +10,7 @@ namespace Compensable
         private readonly SemaphoreSlim _compensationLock;
         private readonly SemaphoreSlim _executionLock;
         private readonly SemaphoreSlim _statusLock;
-        private readonly ConcurrentStack<(ConcurrentStack<Func<Task>> Compensations, Tag Tag)> _taggedCompensations;
+        private readonly CompensationStack<Func<Task>> _compensationStack;
 
         public CompensatorStatus Status { get; private set; }
 
@@ -26,41 +24,9 @@ namespace Compensable
             _compensationLock = new SemaphoreSlim(1, 1);
             _executionLock = new SemaphoreSlim(1, 1);
             _statusLock = new SemaphoreSlim(1, 1);
-            _taggedCompensations = new ConcurrentStack<(ConcurrentStack<Func<Task>> Compensations, Tag Tag)>();
+            _compensationStack = new CompensationStack<Func<Task>>();
 
             Status = CompensatorStatus.Executing;
-        }
-
-        private void AddCompensationToStack(Func<Task> compensation, Tag compensateAtTag)
-        {
-            if (compensateAtTag == null)
-            {
-                // create compensation stack
-                var compensations = new ConcurrentStack<Func<Task>>();
-
-                // add compensation
-                compensations.Push(compensation);
-
-                // add stack to tagged compensations
-                _taggedCompensations.Push((compensations, null));
-            }
-            else
-            {
-                // add compensation to tagged compensation
-                _taggedCompensations.First(tc => tc.Tag == compensateAtTag).Compensations.Push(compensation);
-            }
-        }
-
-        private Tag AddTagToStack(Tag tag)
-        {
-            _taggedCompensations.Push((new ConcurrentStack<Func<Task>>(), tag));
-            return tag;
-        }
-
-        private void ClearStack()
-        {
-            // TODO do we need to acquire compensation lock as an additional safeguard?
-            _taggedCompensations.Clear();
         }
 
         private async Task SetStatusAsync(CompensatorStatus status)

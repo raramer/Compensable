@@ -10,15 +10,15 @@ namespace Compensable
             return await ExecuteAsync(
                 validation: () =>
                 {
-                    ValidateExecution(execution);
-                    ValidateTag(compensateAtTag);
+                    Validate.Execution(execution);
+                    _compensationStack.ValidateTag(compensateAtTag);
                 },
                 execution: async () =>
                 {
                     var result = await execution().ConfigureAwait(false);
 
                     if (compensation != null)
-                        AddCompensationToStack(async () => await compensation(result).ConfigureAwait(false), compensateAtTag);
+                        _compensationStack.AddCompensation(async () => await compensation(result).ConfigureAwait(false), compensateAtTag);
 
                     return result;
                 }).ConfigureAwait(false);

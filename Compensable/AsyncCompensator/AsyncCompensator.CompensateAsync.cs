@@ -35,20 +35,14 @@ namespace Compensable
                 // acquire execution lock, i.e. make sure nothing is still executing, ignore cancellation token on compensation
                 await _executionLock.WaitAsync().ConfigureAwait(false);
 
-                // compensate compensation tags
-                while (_taggedCompensations.TryPeek(out var taggedCompensations))
+                // for each compensation
+                while (_compensationStack.TryPeek(out var compensateAsync))
                 {
-                    while (taggedCompensations.Compensations.TryPeek(out var compensateAsync))
-                    {
-                        // execute compensation
-                        await compensateAsync().ConfigureAwait(false);
+                    // execute compensation
+                    await compensateAsync().ConfigureAwait(false);
 
-                        // remove compensation
-                        taggedCompensations.Compensations.TryPop(out _);
-                    }
-
-                    // removed tagged compensation
-                    _taggedCompensations.TryPop(out _);
+                    // remove compensation
+                    _compensationStack.TryPop(out _);
                 }
 
                 // set status
