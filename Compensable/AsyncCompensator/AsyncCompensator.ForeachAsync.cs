@@ -11,9 +11,9 @@ namespace Compensable
             await ExecuteAsync(
                 validation: () =>
                 {
-                    ValidateItems(items);
-                    ValidateExecution(execution);
-                    ValidateTag(compensateAtTag);
+                    Validate.Items(items);
+                    Validate.Execution(execution);
+                    _compensationStack.ValidateTag(compensateAtTag);
                 },
                 execution: async () =>
                 {
@@ -26,7 +26,7 @@ namespace Compensable
                         await execution(item).ConfigureAwait(false);
 
                         if (compensation != null)
-                            AddCompensationToStack(async () => await compensation(item).ConfigureAwait(false), compensateAtTag);
+                            _compensationStack.AddCompensation(async () => await compensation(item).ConfigureAwait(false), compensateAtTag);
                     }
                 }).ConfigureAwait(false);
         }

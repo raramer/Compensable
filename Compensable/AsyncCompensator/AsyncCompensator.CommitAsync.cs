@@ -5,6 +5,6 @@ namespace Compensable
     partial class AsyncCompensator
     {
         public async Task CommitAsync()
-            => await ExecuteAsync(ClearStack).ConfigureAwait(false);
+            => await ExecuteAsync(_compensationStack.Clear).ConfigureAwait(false);
     }
 }
