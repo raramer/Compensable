@@ -47,6 +47,11 @@ public class DoHelper : ExecuteCompensateHelperBase
         }
     }
 
+    public override bool IsExpectedCompensation(Action actualCompensation)
+    {
+        return Compensate is not null && actualCompensation is not null && Compensate == actualCompensation;
+    }
+
     public override Task<bool> IsExpectedCompensationAsync(Func<Task> actualCompensation)
     {
         return Task.FromResult(CompensateAsync is not null && actualCompensation is not null && CompensateAsync == actualCompensation);

@@ -60,9 +60,18 @@ public class GetHelper : ExecuteCompensateHelperBase
         Assert.Equal(CompensationOptions.ExpectToBeCalled, CompensationCalledWithResult);
     }
 
+    public override bool IsExpectedCompensation(Action actualCompensation)
+    {
+        return IsExpectedCompensationAsync(() =>
+        {
+            actualCompensation();
+            return Task.CompletedTask;
+        }).GetAwaiter().GetResult(); // we know it will complete synchronously
+    }
+
     public override async Task<bool> IsExpectedCompensationAsync(Func<Task> actualCompensation)
     {
-        if (CompensateAsync is null || actualCompensation is null)
+        if (actualCompensation is null)
             return false;
 
         var isExpectedCompensation = false;
