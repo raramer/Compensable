@@ -59,6 +59,12 @@ public class ForeachHelper : HelperBase
         return _itemHelpers.Where(_ => _.ExpectInCompensationStack).Reverse();
     }
 
+    public override bool IsExpectedCompensation(Action actualCompensation)
+    {
+        throw new NotImplementedException();
+    }
+
+
     public override Task<bool> IsExpectedCompensationAsync(Func<Task> actualCompensation)
     {
         throw new NotImplementedException();

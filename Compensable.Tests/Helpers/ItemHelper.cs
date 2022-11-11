@@ -91,6 +91,15 @@ public class ItemHelper : ExecuteCompensateHelperBase
             throw new HelperExecutionException();
     }
 
+    public override bool IsExpectedCompensation(Action actualCompensation)
+    {
+        return IsExpectedCompensationAsync(() =>
+        {
+            actualCompensation();
+            return Task.CompletedTask;
+        }).GetAwaiter().GetResult(); // we know it will complete synchronously
+    }
+
     public override async Task<bool> IsExpectedCompensationAsync(Func<Task> actualCompensation)
     {
         if (actualCompensation is null)

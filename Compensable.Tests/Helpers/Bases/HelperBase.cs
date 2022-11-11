@@ -15,5 +15,7 @@ public abstract class HelperBase
 
     public abstract void AssertHelper();
 
+    public abstract bool IsExpectedCompensation(Action actualCompensation);
+
     public abstract Task<bool> IsExpectedCompensationAsync(Func<Task> actualCompensation);
 }
