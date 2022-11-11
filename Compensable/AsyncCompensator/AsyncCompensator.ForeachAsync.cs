@@ -6,7 +6,7 @@ namespace Compensable
 {
     partial class AsyncCompensator
     {
-        public async Task ForeachAsync<T>(IEnumerable<T> items, Func<T, Task> execution, Func<T, Task> compensation, Tag compensateAtTag)
+        public async Task ForeachAsync<TItem>(IEnumerable<TItem> items, Func<TItem, Task> execution, Func<TItem, Task> compensation, Tag compensateAtTag)
         {
             await ExecuteAsync(
                 validation: () =>
@@ -32,38 +32,38 @@ namespace Compensable
         }
 
         #region Items + Execution Overloads
-        public async Task ForeachAsync<T>(IEnumerable<T> items, Action<T> execution)
-            => await ForeachAsync<T>(items, execution.Awaitable(), default(Func<T, Task>), default(Tag)).ConfigureAwait(false);
+        public async Task ForeachAsync<TItem>(IEnumerable<TItem> items, Action<TItem> execution)
+            => await ForeachAsync<TItem>(items, execution.Awaitable(), default(Func<TItem, Task>), default(Tag)).ConfigureAwait(false);
 
-        public async Task ForeachAsync<T>(IEnumerable<T> items, Func<T, Task> execution)
-            => await ForeachAsync<T>(items, execution, default(Func<T, Task>), default(Tag)).ConfigureAwait(false);
+        public async Task ForeachAsync<TItem>(IEnumerable<TItem> items, Func<TItem, Task> execution)
+            => await ForeachAsync<TItem>(items, execution, default(Func<TItem, Task>), default(Tag)).ConfigureAwait(false);
         #endregion
 
         #region Items + Execution + Compensation Overloads
-        public async Task ForeachAsync<T>(IEnumerable<T> items, Action<T> execution, Action<T> compensation)
-            => await ForeachAsync<T>(items, execution.Awaitable(), compensation.Awaitable(), default(Tag)).ConfigureAwait(false);
+        public async Task ForeachAsync<TItem>(IEnumerable<TItem> items, Action<TItem> execution, Action<TItem> compensation)
+            => await ForeachAsync<TItem>(items, execution.Awaitable(), compensation.Awaitable(), default(Tag)).ConfigureAwait(false);
 
-        public async Task ForeachAsync<T>(IEnumerable<T> items, Action<T> execution, Func<T, Task> compensation)
-            => await ForeachAsync<T>(items, execution.Awaitable(), compensation, default(Tag)).ConfigureAwait(false);
+        public async Task ForeachAsync<TItem>(IEnumerable<TItem> items, Action<TItem> execution, Func<TItem, Task> compensation)
+            => await ForeachAsync<TItem>(items, execution.Awaitable(), compensation, default(Tag)).ConfigureAwait(false);
 
 
-        public async Task ForeachAsync<T>(IEnumerable<T> items, Func<T, Task> execution, Action<T> compensation)
-            => await ForeachAsync<T>(items, execution, compensation.Awaitable(), default(Tag)).ConfigureAwait(false);
+        public async Task ForeachAsync<TItem>(IEnumerable<TItem> items, Func<TItem, Task> execution, Action<TItem> compensation)
+            => await ForeachAsync<TItem>(items, execution, compensation.Awaitable(), default(Tag)).ConfigureAwait(false);
 
-        public async Task ForeachAsync<T>(IEnumerable<T> items, Func<T, Task> execution, Func<T, Task> compensation)
-            => await ForeachAsync<T>(items, execution, compensation, default(Tag)).ConfigureAwait(false);
+        public async Task ForeachAsync<TItem>(IEnumerable<TItem> items, Func<TItem, Task> execution, Func<TItem, Task> compensation)
+            => await ForeachAsync<TItem>(items, execution, compensation, default(Tag)).ConfigureAwait(false);
         #endregion
 
         #region Items + Execution + Compensation + CompensateAtTag Overloads
-        public async Task ForeachAsync<T>(IEnumerable<T> items, Action<T> execution, Action<T> compensation, Tag compensateAtTag)
-            => await ForeachAsync<T>(items, execution.Awaitable(), compensation.Awaitable(), compensateAtTag).ConfigureAwait(false);
+        public async Task ForeachAsync<TItem>(IEnumerable<TItem> items, Action<TItem> execution, Action<TItem> compensation, Tag compensateAtTag)
+            => await ForeachAsync<TItem>(items, execution.Awaitable(), compensation.Awaitable(), compensateAtTag).ConfigureAwait(false);
 
-        public async Task ForeachAsync<T>(IEnumerable<T> items, Action<T> execution, Func<T, Task> compensation, Tag compensateAtTag)
-            => await ForeachAsync<T>(items, execution.Awaitable(), compensation, compensateAtTag).ConfigureAwait(false);
+        public async Task ForeachAsync<TItem>(IEnumerable<TItem> items, Action<TItem> execution, Func<TItem, Task> compensation, Tag compensateAtTag)
+            => await ForeachAsync<TItem>(items, execution.Awaitable(), compensation, compensateAtTag).ConfigureAwait(false);
 
 
-        public async Task ForeachAsync<T>(IEnumerable<T> items, Func<T, Task> execution, Action<T> compensation, Tag compensateAtTag)
-            => await ForeachAsync<T>(items, execution, compensation.Awaitable(), compensateAtTag).ConfigureAwait(false);
+        public async Task ForeachAsync<TItem>(IEnumerable<TItem> items, Func<TItem, Task> execution, Action<TItem> compensation, Tag compensateAtTag)
+            => await ForeachAsync<TItem>(items, execution, compensation.Awaitable(), compensateAtTag).ConfigureAwait(false);
         #endregion
     }
 }
