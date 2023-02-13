@@ -1,14 +1,13 @@
-﻿using System;
-using System.Threading.Tasks;
+using System;
 
 namespace Compensable
 {
     partial class Compensator
     {
-        public async Task CompensateAsync()
-            => await CompensateAsync(null).ConfigureAwait(false);
+        public void Compensate()
+            => Compensate(null);
 
-        private async Task CompensateAsync(Exception whileExecuting)
+        private void Compensate(Exception whileExecuting)
         {
             // short-circuit if compensated / failed to compensate
             if (Status == CompensatorStatus.Compensated)
@@ -18,7 +17,7 @@ namespace Compensable
                 throw new CompensatorStatusException(CompensatorStatus.FailedToCompensate);
 
             // acquire compensation lock, ignore cancellation token on compensation
-            await _compensationLock.WaitAsync().ConfigureAwait(false);
+            _compensationLock.Wait();
 
             try
             {
@@ -30,34 +29,28 @@ namespace Compensable
                     throw new CompensatorStatusException(CompensatorStatus.FailedToCompensate);
 
                 // set status
-                await SetStatusAsync(CompensatorStatus.Compensating).ConfigureAwait(false);
+                SetStatus(CompensatorStatus.Compensating);
 
                 // acquire execution lock, i.e. make sure nothing is still executing, ignore cancellation token on compensation
-                await _executionLock.WaitAsync().ConfigureAwait(false);
+                _executionLock.Wait();
 
-                // compensate compensation tags
-                while (_taggedCompensations.TryPeek(out var taggedCompensations))
+                // for each compensation
+                while (_compensationStack.TryPeek(out var compensate))
                 {
-                    while (taggedCompensations.Compensations.TryPeek(out var compensateAsync))
-                    {
-                        // execute compensation
-                        await compensateAsync().ConfigureAwait(false);
+                    // execute compensation
+                    compensate();
 
-                        // remove compensation
-                        taggedCompensations.Compensations.TryPop(out _);
-                    }
-
-                    // removed tagged compensation
-                    _taggedCompensations.TryPop(out _);
+                    // remove compensation
+                    _compensationStack.TryPop(out _);
                 }
 
                 // set status
-                await SetStatusAsync(CompensatorStatus.Compensated).ConfigureAwait(false);
+                SetStatus(CompensatorStatus.Compensated);
             }
             catch (Exception whileCompensating)
             {
                 // set status
-                await SetStatusAsync(CompensatorStatus.FailedToCompensate).ConfigureAwait(false);
+                SetStatus(CompensatorStatus.FailedToCompensate);
 
                 // throw compensation exception
                 throw new CompensationException(

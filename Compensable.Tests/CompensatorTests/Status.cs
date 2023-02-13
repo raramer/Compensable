@@ -1,26 +1,26 @@
-﻿namespace Compensable.Tests.CompensatorTests;
+namespace Compensable.Tests.CompensatorTests;
 
 public class Status : TestBase
 {
     [Fact]
-    public async Task CompensatorFailedToCompensate()
+    public void CompensatorFailedToCompensate()
     {
         // arrange
         var compensator = new Compensator();
         var status = CompensatorStatus.FailedToCompensate;
-        await ArrangeStatusAsync(compensator, status).ConfigureAwait(false);
+        ArrangeStatus(compensator, status);
 
         // assert
         Assert.Equal(status, compensator.Status);
     }
 
     [Fact]
-    public async Task CompensatorIsCompensating()
+    public void CompensatorIsCompensating()
     {
         // arrange
         var compensator = new Compensator();
         var status = CompensatorStatus.Compensating;
-        await ArrangeStatusAsync(compensator, status).ConfigureAwait(false);
+        ArrangeStatus(compensator, status);
 
         // assert
         Assert.Equal(status, compensator.Status);
@@ -37,24 +37,24 @@ public class Status : TestBase
     }
 
     [Fact]
-    public async Task CompensatorIsFailedToExecute()
+    public void CompensatorIsFailedToExecute()
     {
         // arrange
         var compensator = new Compensator();
         var status = CompensatorStatus.FailedToExecute;
-        await ArrangeStatusAsync(compensator, status).ConfigureAwait(false);
+        ArrangeStatus(compensator, status);
 
         // assert
         Assert.Equal(status, compensator.Status);
     }
 
     [Fact]
-    public async Task CompensatorWasCompensated()
+    public void CompensatorWasCompensated()
     {
         // arrange
         var compensator = new Compensator();
         var status = CompensatorStatus.Compensated;
-        await ArrangeStatusAsync(compensator, status).ConfigureAwait(false);
+        ArrangeStatus(compensator, status);
 
         // assert
         Assert.Equal(status, compensator.Status);

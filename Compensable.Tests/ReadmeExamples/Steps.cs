@@ -2,36 +2,72 @@
 
 internal class Steps
 {
-    private AsyncCompensator? compensator = null;
+    private Compensator? compensator = null;
+    private AsyncCompensator? asyncCompensator = null;
 
     #pragma warning disable CS8602
+    internal void AddCompensation(bool compensate)
+    {
+        compensator.AddCompensation(
+            compensation: () => compensateStep(),
+            compensateAtTag: null);
+
+        void compensateStep() { };
+    }
+
     internal async Task AddCompensationAsync(bool compensate)
     {
-        await compensator.AddCompensationAsync(
+        await asyncCompensator.AddCompensationAsync(
             compensation: async () => await compensateStepAsync(),
             compensateAtTag: null);
 
         Task compensateStepAsync() => Task.CompletedTask;
     }
 
+    internal void Commit()
+    {
+        compensator.Commit();
+    }
+
     internal async Task CommitAsync()
     {
-        await compensator.CommitAsync();
+        await asyncCompensator.CommitAsync();
+    }
+
+    internal void Compensate()
+    {
+        compensator.Compensate();
     }
 
     internal async Task CompensateAsync()
     {
-        await compensator.CompensateAsync();
+        await asyncCompensator.CompensateAsync();
+    }
+
+    internal void CreateTag()
+    {
+        var tag = compensator.CreateTag();
     }
 
     internal async Task CreateTagAsync()
     {
-        var tag = await compensator.CreateTagAsync();
+        var tag = await asyncCompensator.CreateTagAsync();
+    }
+
+    internal void Do()
+    {
+        compensator.Do(
+            execution: () => step(),
+            compensation: () => compensateStep(),
+            compensateAtTag: null);
+
+        void compensateStep() { };
+        void step() { };
     }
 
     internal async Task DoAsync()
     {
-        await compensator.DoAsync(
+        await asyncCompensator.DoAsync(
             execution: async () => await stepAsync(),
             compensation: async () => await compensateStepAsync(),
             compensateAtTag: null);
@@ -40,9 +76,22 @@ internal class Steps
         Task stepAsync() => Task.CompletedTask;
     }
 
+    internal void DoIf()
+    {
+        compensator.DoIf(
+            test: () => test(),
+            execution: () => step(),
+            compensation: () => compensateStep(),
+            compensateAtTag: null);
+
+        void compensateStep() { };
+        void step() { };
+        bool test() => true;
+    }
+
     internal async Task DoIfAsync()
     {
-        await compensator.DoIfAsync(
+        await asyncCompensator.DoIfAsync(
             test: async () => await testAsync(),
             execution: async () => await stepAsync(),
             compensation: async () => await compensateStepAsync(),
@@ -53,10 +102,23 @@ internal class Steps
         Task<bool> testAsync() => Task.FromResult(true);
     }
 
+    internal void Foreach()
+    {
+        var items = new[] { "item1", "item2", "item3" };
+        compensator.Foreach(
+            items: items,
+            execution: (item) => step(item),
+            compensation: (item) => compensateStep(item),
+            compensateAtTag: null);
+
+        void compensateStep(string item) { };
+        void step(string item) { };
+    }
+
     internal async Task ForeachAsync()
     {
         var items = new[] { "item1", "item2", "item3" };
-        await compensator.ForeachAsync(
+        await asyncCompensator.ForeachAsync(
             items: items,
             execution: async (item) => await stepAsync(item),
             compensation: async (item) => await compensateStepAsync(item),
@@ -66,9 +128,20 @@ internal class Steps
         Task stepAsync(string item) => Task.CompletedTask;
     }
 
+    internal void Get()
+    {
+        var result = compensator.Get(
+            execution: () => step(),
+            compensation: (_result) => compensateStep(_result),
+            compensateAtTag: null);
+
+        void compensateStep(int result) { };
+        int step() => 1;
+    }
+
     internal async Task GetAsync()
     {
-        var result = await compensator.GetAsync(
+        var result = await asyncCompensator.GetAsync(
             execution: async () => await stepAsync(),
             compensation: async (_result) => await compensateStepAsync(_result),
             compensateAtTag: null);

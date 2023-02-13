@@ -1,23 +1,23 @@
-﻿namespace Compensable.Tests.CompensatorTests;
+namespace Compensable.Tests.CompensatorTests;
 
-public class ForeachAsync : TestBase
+public class Foreach : TestBase
 {
     [Fact]
-    public async Task CompensationFails()
+    public void CompensationFails()
     {
         // arrange
         var compensator = new Compensator();
-        var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
+        var tag = compensator.CreateTag();
 
         var foreachHelper = new ForeachHelper().AddItems(
             new ItemHelper(ItemCompensationOptions.ShouldBeCalledAndThrowException),
             new ItemHelper(ItemCompensationOptions.ShouldBeCalledAndSucceed));
-        await compensator.ForeachAsync(foreachHelper.Items, foreachHelper.ExecuteAsync, foreachHelper.CompensateAsync, tag).ConfigureAwait(false);
+        compensator.Foreach(foreachHelper.Items, foreachHelper.Execute, foreachHelper.Compensate, tag);
 
         // act
-        var exception = await Assert.ThrowsAsync<CompensationException>(async () =>
-            await compensator.CompensateAsync().ConfigureAwait(false)
-        ).ConfigureAwait(false);
+        var exception = Assert.Throws<CompensationException>(() =>
+            compensator.Compensate()
+        );
 
         // assert
         AssertCompensationException(exception, expectExecutionException: false);
@@ -26,68 +26,68 @@ public class ForeachAsync : TestBase
 
         AssertHelpers(foreachHelper);
 
-        await AssertInternalCompensationOrderAsync(compensator, foreachHelper).ConfigureAwait(false);
+        AssertInternalCompensationOrder(compensator, foreachHelper);
     }
 
     [Fact]
-    public async Task CompensationIsNull()
+    public void CompensationIsNull()
     {
         // arrange
         var compensator = new Compensator();
-        var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
+        var tag = compensator.CreateTag();
         var foreachHelper = new ForeachHelper(ForeachOptions.CompensationNull).AddItems(
             new ItemHelper(),
             new ItemHelper(),
             new ItemHelper());
 
         // act
-        await compensator.ForeachAsync(foreachHelper.Items, foreachHelper.ExecuteAsync, foreachHelper.CompensateAsync, tag).ConfigureAwait(false);
+        compensator.Foreach(foreachHelper.Items, foreachHelper.Execute, foreachHelper.Compensate, tag);
 
         // assert
         Assert.Equal(CompensatorStatus.Executing, compensator.Status);
 
         AssertHelpers(foreachHelper);
 
-        await AssertInternalCompensationOrderAsync(compensator).ConfigureAwait(false);
+        AssertInternalCompensationOrder(compensator);
     }
 
     [Fact]
-    public async Task CompensationWillFail()
+    public void CompensationWillFail()
     {
         // arrange
         var compensator = new Compensator();
-        var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
+        var tag = compensator.CreateTag();
         var foreachHelper = new ForeachHelper().AddItems(
             new ItemHelper(ItemCompensationOptions.WouldThrowExceptionButNotCalled),
             new ItemHelper(),
             new ItemHelper());
 
         // act
-        await compensator.ForeachAsync(foreachHelper.Items, foreachHelper.ExecuteAsync, foreachHelper.CompensateAsync, tag).ConfigureAwait(false);
+        compensator.Foreach(foreachHelper.Items, foreachHelper.Execute, foreachHelper.Compensate, tag);
 
         // assert
         Assert.Equal(CompensatorStatus.Executing, compensator.Status);
 
         AssertHelpers(foreachHelper);
 
-        await AssertInternalCompensationOrderAsync(compensator, foreachHelper).ConfigureAwait(false);
+        AssertInternalCompensationOrder(compensator, foreachHelper);
     }
 
     [Fact]
-    public async Task ExecutionFails()
+    public void ExecutionFails()
     {
         // arrange
         var compensator = new Compensator();
-        var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
+        var tag = compensator.CreateTag();
         var foreachHelper = new ForeachHelper().AddItems(
             new ItemHelper(ItemCompensationOptions.ShouldBeCalledAndSucceed),
             new ItemHelper(ItemExecutionOptions.ShouldBeCalledAndThrowException),
             new ItemHelper(ItemEnumerationOptions.WouldSucceedButNotCalled));
 
         // act
-        var exception = await Assert.ThrowsAsync<HelperExecutionException>(async () =>
-            await compensator.ForeachAsync(foreachHelper.Items, foreachHelper.ExecuteAsync, foreachHelper.CompensateAsync, tag).ConfigureAwait(false)
-        ).ConfigureAwait(false);
+        var exception = Assert.Throws<HelperExecutionException>(() =>
+            compensator.Foreach(foreachHelper.Items, foreachHelper.Execute, foreachHelper.Compensate, tag)
+        );
 
         // assert
         Assert.Equal(ExpectedMessages.ExecuteFailed, exception.Message);
@@ -96,24 +96,24 @@ public class ForeachAsync : TestBase
 
         AssertHelpers(foreachHelper);
 
-        await AssertInternalCompensationOrderAsync(compensator).ConfigureAwait(false);
+        AssertInternalCompensationOrder(compensator);
     }
 
     [Fact]
-    public async Task ExecutionIsNull()
+    public void ExecutionIsNull()
     {
         // arrange
         var compensator = new Compensator();
-        var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
+        var tag = compensator.CreateTag();
         var foreachHelper = new ForeachHelper(ForeachOptions.ExecutionNull).AddItems(
             new ItemHelper(ItemEnumerationOptions.WouldSucceedButNotCalled),
             new ItemHelper(ItemEnumerationOptions.WouldSucceedButNotCalled),
             new ItemHelper(ItemEnumerationOptions.WouldSucceedButNotCalled));
 
         // act
-        var exception = await Assert.ThrowsAsync<ArgumentNullException>(async () =>
-            await compensator.ForeachAsync(foreachHelper.Items, foreachHelper.ExecuteAsync, foreachHelper.CompensateAsync, tag).ConfigureAwait(false)
-        ).ConfigureAwait(false);
+        var exception = Assert.Throws<ArgumentNullException>(() =>
+            compensator.Foreach(foreachHelper.Items, foreachHelper.Execute, foreachHelper.Compensate, tag)
+        );
 
         // assert
         Assert.Equal(ExpectedMessages.ValueCannotBeNull("execution"), exception.Message);
@@ -122,46 +122,46 @@ public class ForeachAsync : TestBase
 
         AssertHelpers(foreachHelper);
 
-        await AssertInternalCompensationOrderAsync(compensator).ConfigureAwait(false);
+        AssertInternalCompensationOrder(compensator);
     }
 
     [Fact]
-    public async Task ExecutionSucceeds()
+    public void ExecutionSucceeds()
     {
         // arrange
         var compensator = new Compensator();
-        var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
+        var tag = compensator.CreateTag();
         var foreachHelper = new ForeachHelper().AddItems(
             new ItemHelper(),
             new ItemHelper(),
             new ItemHelper());
 
         // act
-        await compensator.ForeachAsync(foreachHelper.Items, foreachHelper.ExecuteAsync, foreachHelper.CompensateAsync, tag).ConfigureAwait(false);
+        compensator.Foreach(foreachHelper.Items, foreachHelper.Execute, foreachHelper.Compensate, tag);
 
         // assert
         Assert.Equal(CompensatorStatus.Executing, compensator.Status);
 
         AssertHelpers(foreachHelper);
 
-        await AssertInternalCompensationOrderAsync(compensator, foreachHelper).ConfigureAwait(false);
+        AssertInternalCompensationOrder(compensator, foreachHelper);
     }
 
     [Fact]
-    public async Task ItemEnumerationFails()
+    public void ItemEnumerationFails()
     {
         // arrange
         var compensator = new Compensator();
-        var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
+        var tag = compensator.CreateTag();
         var foreachHelper = new ForeachHelper().AddItems(
             new ItemHelper(ItemCompensationOptions.ShouldBeCalledAndSucceed),
             new ItemHelper(ItemEnumerationOptions.ShouldBeCalledAndThrowException),
             new ItemHelper(ItemEnumerationOptions.WouldSucceedButNotCalled));
 
         // act
-        var exception = await Assert.ThrowsAsync<HelperItemException>(async () =>
-            await compensator.ForeachAsync(foreachHelper.Items, foreachHelper.ExecuteAsync, foreachHelper.CompensateAsync, tag).ConfigureAwait(false)
-        ).ConfigureAwait(false);
+        var exception = Assert.Throws<HelperItemException>(() =>
+            compensator.Foreach(foreachHelper.Items, foreachHelper.Execute, foreachHelper.Compensate, tag)
+        );
 
         // assert
         Assert.Equal(ExpectedMessages.ItemFailed, exception.Message);
@@ -170,24 +170,24 @@ public class ForeachAsync : TestBase
 
         AssertHelpers(foreachHelper);
 
-        await AssertInternalCompensationOrderAsync(compensator).ConfigureAwait(false);
+        AssertInternalCompensationOrder(compensator);
     }
 
     [Fact]
-    public async Task ItemsIsNull()
+    public void ItemsIsNull()
     {
         // arrange
         var compensator = new Compensator();
-        var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
+        var tag = compensator.CreateTag();
         var foreachHelper = new ForeachHelper(ForeachOptions.ItemsNull).AddItems(
             new ItemHelper(ItemEnumerationOptions.WouldSucceedButNotCalled),
             new ItemHelper(ItemEnumerationOptions.WouldSucceedButNotCalled),
             new ItemHelper(ItemEnumerationOptions.WouldSucceedButNotCalled));
 
         // act
-        var exception = await Assert.ThrowsAsync<ArgumentNullException>(async () =>
-            await compensator.ForeachAsync(foreachHelper.Items, foreachHelper.ExecuteAsync, foreachHelper.CompensateAsync, tag).ConfigureAwait(false)
-        ).ConfigureAwait(false);
+        var exception = Assert.Throws<ArgumentNullException>(() =>
+            compensator.Foreach(foreachHelper.Items, foreachHelper.Execute, foreachHelper.Compensate, tag)
+        );
 
         // assert
         Assert.Equal(ExpectedMessages.ValueCannotBeNull("items"), exception.Message);
@@ -196,37 +196,37 @@ public class ForeachAsync : TestBase
 
         AssertHelpers(foreachHelper);
 
-        await AssertInternalCompensationOrderAsync(compensator).ConfigureAwait(false);
+        AssertInternalCompensationOrder(compensator);
     }
 
 
     [Fact]
-    public async Task ItemsIsEmpty()
+    public void ItemsIsEmpty()
     {
         // arrange
         var compensator = new Compensator();
-        var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
+        var tag = compensator.CreateTag();
         var foreachHelper = new ForeachHelper().AddItems();
 
         // act
-        await compensator.ForeachAsync(foreachHelper.Items, foreachHelper.ExecuteAsync, foreachHelper.CompensateAsync, tag).ConfigureAwait(false);
+        compensator.Foreach(foreachHelper.Items, foreachHelper.Execute, foreachHelper.Compensate, tag);
 
         // assert
         Assert.Equal(CompensatorStatus.Executing, compensator.Status);
 
         AssertHelpers(foreachHelper);
 
-        await AssertInternalCompensationOrderAsync(compensator).ConfigureAwait(false);
+        AssertInternalCompensationOrder(compensator);
     }
 
     [Fact]
-    public async Task StatusIsCompensated()
+    public void StatusIsCompensated()
     {
         // arrange
         var compensator = new Compensator();
-        var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
+        var tag = compensator.CreateTag();
         var status = CompensatorStatus.Compensated;
-        await ArrangeStatusAsync(compensator, status).ConfigureAwait(false);
+        ArrangeStatus(compensator, status);
 
         var foreachHelper = new ForeachHelper().AddItems(
             new ItemHelper(ItemEnumerationOptions.WouldSucceedButNotCalled),
@@ -234,9 +234,9 @@ public class ForeachAsync : TestBase
             new ItemHelper(ItemEnumerationOptions.WouldSucceedButNotCalled));
 
         // act
-        var exception = await Assert.ThrowsAsync<CompensatorStatusException>(async () =>
-            await compensator.ForeachAsync(foreachHelper.Items, foreachHelper.ExecuteAsync, foreachHelper.CompensateAsync, tag).ConfigureAwait(false)
-        ).ConfigureAwait(false);
+        var exception = Assert.Throws<CompensatorStatusException>(() =>
+            compensator.Foreach(foreachHelper.Items, foreachHelper.Execute, foreachHelper.Compensate, tag)
+        );
 
         // assert
         Assert.Equal(ExpectedMessages.CompensatorStatusIs(status), exception.Message);
@@ -245,13 +245,13 @@ public class ForeachAsync : TestBase
     }
 
     [Fact]
-    public async Task StatusIsCompensating()
+    public void StatusIsCompensating()
     {
         // arrange
         var compensator = new Compensator();
-        var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
+        var tag = compensator.CreateTag();
         var status = CompensatorStatus.Compensating;
-        await ArrangeStatusAsync(compensator, status).ConfigureAwait(false);
+        ArrangeStatus(compensator, status);
 
         var foreachHelper = new ForeachHelper().AddItems(
             new ItemHelper(ItemEnumerationOptions.WouldSucceedButNotCalled),
@@ -259,9 +259,9 @@ public class ForeachAsync : TestBase
             new ItemHelper(ItemEnumerationOptions.WouldSucceedButNotCalled));
 
         // act
-        var exception = await Assert.ThrowsAsync<CompensatorStatusException>(async () =>
-            await compensator.ForeachAsync(foreachHelper.Items, foreachHelper.ExecuteAsync, foreachHelper.CompensateAsync, tag).ConfigureAwait(false)
-        ).ConfigureAwait(false);
+        var exception = Assert.Throws<CompensatorStatusException>(() =>
+            compensator.Foreach(foreachHelper.Items, foreachHelper.Execute, foreachHelper.Compensate, tag)
+        );
 
         // assert
         Assert.Equal(ExpectedMessages.CompensatorStatusIs(status), exception.Message);
@@ -270,13 +270,13 @@ public class ForeachAsync : TestBase
     }
 
     [Fact]
-    public async Task StatusIsFailedToCompensate()
+    public void StatusIsFailedToCompensate()
     {
         // arrange
         var compensator = new Compensator();
-        var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
+        var tag = compensator.CreateTag();
         var status = CompensatorStatus.FailedToCompensate;
-        await ArrangeStatusAsync(compensator, status).ConfigureAwait(false);
+        ArrangeStatus(compensator, status);
 
         var foreachHelper = new ForeachHelper().AddItems(
             new ItemHelper(ItemEnumerationOptions.WouldSucceedButNotCalled),
@@ -284,9 +284,9 @@ public class ForeachAsync : TestBase
             new ItemHelper(ItemEnumerationOptions.WouldSucceedButNotCalled));
 
         // act
-        var exception = await Assert.ThrowsAsync<CompensatorStatusException>(async () =>
-            await compensator.ForeachAsync(foreachHelper.Items, foreachHelper.ExecuteAsync, foreachHelper.CompensateAsync, tag).ConfigureAwait(false)
-        ).ConfigureAwait(false);
+        var exception = Assert.Throws<CompensatorStatusException>(() =>
+            compensator.Foreach(foreachHelper.Items, foreachHelper.Execute, foreachHelper.Compensate, tag)
+        );
 
         // assert
         Assert.Equal(ExpectedMessages.CompensatorStatusIs(status), exception.Message);
@@ -295,13 +295,13 @@ public class ForeachAsync : TestBase
     }
 
     [Fact]
-    public async Task StatusIsFailedToExecute()
+    public void StatusIsFailedToExecute()
     {
         // arrange
         var compensator = new Compensator();
-        var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
+        var tag = compensator.CreateTag();
         var status = CompensatorStatus.FailedToExecute;
-        await ArrangeStatusAsync(compensator, status).ConfigureAwait(false);
+        ArrangeStatus(compensator, status);
 
         var foreachHelper = new ForeachHelper().AddItems(
             new ItemHelper(ItemEnumerationOptions.WouldSucceedButNotCalled),
@@ -309,9 +309,9 @@ public class ForeachAsync : TestBase
             new ItemHelper(ItemEnumerationOptions.WouldSucceedButNotCalled));
 
         // act
-        var exception = await Assert.ThrowsAsync<CompensatorStatusException>(async () =>
-            await compensator.ForeachAsync(foreachHelper.Items, foreachHelper.ExecuteAsync, foreachHelper.CompensateAsync, tag).ConfigureAwait(false)
-        ).ConfigureAwait(false);
+        var exception = Assert.Throws<CompensatorStatusException>(() =>
+            compensator.Foreach(foreachHelper.Items, foreachHelper.Execute, foreachHelper.Compensate, tag)
+        );
 
         // assert
         Assert.Equal(ExpectedMessages.CompensatorStatusIs(status), exception.Message);
@@ -320,11 +320,11 @@ public class ForeachAsync : TestBase
     }
 
     [Fact]
-    public async Task TagDoesNotExist()
+    public void TagDoesNotExist()
     {
         // arrange
         var compensator = new Compensator();
-        var unusedTag = await compensator.CreateTagAsync().ConfigureAwait(false);
+        var unusedTag = compensator.CreateTag();
         var foreachHelper = new ForeachHelper().AddItems(
             new ItemHelper(ItemEnumerationOptions.WouldSucceedButNotCalled),
             new ItemHelper(ItemEnumerationOptions.WouldSucceedButNotCalled),
@@ -332,9 +332,9 @@ public class ForeachAsync : TestBase
         var tag = new Tag();
 
         // act
-        var exception = await Assert.ThrowsAsync<TagNotFoundException>(async () =>
-            await compensator.ForeachAsync(foreachHelper.Items, foreachHelper.ExecuteAsync, foreachHelper.CompensateAsync, tag).ConfigureAwait(false)
-        ).ConfigureAwait(false);
+        var exception = Assert.Throws<TagNotFoundException>(() =>
+            compensator.Foreach(foreachHelper.Items, foreachHelper.Execute, foreachHelper.Compensate, tag)
+        );
 
         // assert
         Assert.Equal(ExpectedMessages.TagNotFound, exception.Message);
@@ -343,15 +343,15 @@ public class ForeachAsync : TestBase
 
         AssertHelpers(foreachHelper);
 
-        await AssertInternalCompensationOrderAsync(compensator).ConfigureAwait(false);
+        AssertInternalCompensationOrder(compensator);
     }
 
     [Fact]
-    public async Task TagIsNull()
+    public void TagIsNull()
     {
         // arrange
         var compensator = new Compensator();
-        var unusedTag = await compensator.CreateTagAsync().ConfigureAwait(false);
+        var unusedTag = compensator.CreateTag();
         var foreachHelper = new ForeachHelper().AddItems(
             new ItemHelper(),
             new ItemHelper(),
@@ -359,13 +359,13 @@ public class ForeachAsync : TestBase
         var tag = default(Tag);
 
         // act
-        await compensator.ForeachAsync(foreachHelper.Items, foreachHelper.ExecuteAsync, foreachHelper.CompensateAsync, tag).ConfigureAwait(false);
+        compensator.Foreach(foreachHelper.Items, foreachHelper.Execute, foreachHelper.Compensate, tag);
 
         // assert
         Assert.Equal(CompensatorStatus.Executing, compensator.Status);
 
         AssertHelpers(foreachHelper);
 
-        await AssertInternalCompensationOrderAsync(compensator, foreachHelper).ConfigureAwait(false);
+        AssertInternalCompensationOrder(compensator, foreachHelper);
     }
 }
