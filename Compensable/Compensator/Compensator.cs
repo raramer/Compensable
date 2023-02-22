@@ -1,16 +1,15 @@
-﻿using System;
+using System;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Compensable
 {
-    public sealed partial class AsyncCompensator
+    public sealed partial class Compensator
     {
         private readonly CancellationToken _cancellationToken;
         private readonly SemaphoreSlim _compensationLock;
         private readonly SemaphoreSlim _executionLock;
         private readonly SemaphoreSlim _statusLock;
-        private readonly CompensationStack<Func<Task>> _compensationStack;
+        private readonly CompensationStack<Action> _compensationStack;
 
         /// <summary>
         /// The status of the compensator.
@@ -18,31 +17,31 @@ namespace Compensable
         public CompensatorStatus Status { get; private set; }
 
         /// <summary>
-        /// Creates a new asynchronous compensator.
+        /// Creates a new synchronous compensator.
         /// </summary>
-        public AsyncCompensator() : this(CancellationToken.None)
+        public Compensator() : this(CancellationToken.None)
         {
         }
 
         /// <summary>
-        /// Creates a new asynchronous compensator.
+        /// Creates a new synchronous compensator.
         /// </summary>
         /// <param name="cancellationToken">A cancellation token.</param>
-        public AsyncCompensator(CancellationToken cancellationToken)
+        public Compensator(CancellationToken cancellationToken)
         {
             _cancellationToken = cancellationToken;
             _compensationLock = new SemaphoreSlim(1, 1);
             _executionLock = new SemaphoreSlim(1, 1);
             _statusLock = new SemaphoreSlim(1, 1);
-            _compensationStack = new CompensationStack<Func<Task>>();
+            _compensationStack = new CompensationStack<Action>();
 
             Status = CompensatorStatus.Executing;
         }
 
-        private async Task SetStatusAsync(CompensatorStatus status)
+        private void SetStatus(CompensatorStatus status)
         {
             // aquire status lock, ignore cancellation token
-            await _statusLock.WaitAsync().ConfigureAwait(false);
+            _statusLock.Wait();
 
             try
             {

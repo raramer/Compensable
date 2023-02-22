@@ -4,6 +4,10 @@ namespace Compensable
 {
     partial class AsyncCompensator
     {
+        /// <summary>
+        /// Creates a tagged position in the compensation stack.
+        /// </summary>
+        /// <returns>A task that represents creating the tag.</returns>
         public async Task<Tag> CreateTagAsync()
             => await CreateTagAsync(default(string)).ConfigureAwait(false);
 

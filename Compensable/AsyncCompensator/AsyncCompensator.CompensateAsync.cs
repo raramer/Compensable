@@ -5,6 +5,10 @@ namespace Compensable
 {
     partial class AsyncCompensator
     {
+        /// <summary>
+        /// Runs the compensations in the compensation stack without requiring a failed execution.
+        /// </summary>
+        /// <returns>A task that represents running the compensations.</returns>
         public async Task CompensateAsync()
             => await CompensateAsync(null).ConfigureAwait(false);
 

@@ -1,16 +1,16 @@
-﻿namespace Compensable.Tests.CompensatorTests;
+namespace Compensable.Tests.CompensatorTests;
 
-public class CreateTagAsync : TestBase
+public class CreateTag : TestBase
 {
     [Fact]
-    public async Task LabelIsEmpty()
+    public void LabelIsEmpty()
     {
         // arrange
         var compensator = new Compensator();
 
         // act
         var label = "";
-        var tag = await compensator.CreateTagAsync(label).ConfigureAwait(false);
+        var tag = compensator.CreateTag(label);
 
         // assert
         Assert.NotNull(tag);
@@ -18,17 +18,17 @@ public class CreateTagAsync : TestBase
 
         Assert.Equal(CompensatorStatus.Executing, compensator.Status);
 
-        await AssertInternalCompensationOrderAsync(compensator).ConfigureAwait(false);
+        AssertInternalCompensationOrder(compensator);
     }
 
     [Fact]
-    public async Task LabelIsNotSpecified()
+    public void LabelIsNotSpecified()
     {
         // arrange
         var compensator = new Compensator();
 
         // act
-        var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
+        var tag = compensator.CreateTag();
 
         // assert
         Assert.NotNull(tag);
@@ -36,18 +36,18 @@ public class CreateTagAsync : TestBase
 
         Assert.Equal(CompensatorStatus.Executing, compensator.Status);
 
-        await AssertInternalCompensationOrderAsync(compensator).ConfigureAwait(false);
+        AssertInternalCompensationOrder(compensator);
     }
 
     [Fact]
-    public async Task LabelIsNull()
+    public void LabelIsNull()
     {
         // arrange
         var compensator = new Compensator();
 
         // act
         var label = default(string);
-        var tag = await compensator.CreateTagAsync(label).ConfigureAwait(false);
+        var tag = compensator.CreateTag(label);
 
         // assert
         Assert.NotNull(tag);
@@ -55,18 +55,18 @@ public class CreateTagAsync : TestBase
 
         Assert.Equal(CompensatorStatus.Executing, compensator.Status);
 
-        await AssertInternalCompensationOrderAsync(compensator).ConfigureAwait(false);
+        AssertInternalCompensationOrder(compensator);
     }
 
     [Fact]
-    public async Task LabelIsSpecified()
+    public void LabelIsSpecified()
     {
         // arrange
         var compensator = new Compensator();
 
         // act
         var label = "My label";
-        var tag = await compensator.CreateTagAsync(label).ConfigureAwait(false);
+        var tag = compensator.CreateTag(label);
 
         // assert
         Assert.NotNull(tag);
@@ -74,18 +74,18 @@ public class CreateTagAsync : TestBase
 
         Assert.Equal(CompensatorStatus.Executing, compensator.Status);
 
-        await AssertInternalCompensationOrderAsync(compensator).ConfigureAwait(false);
+        AssertInternalCompensationOrder(compensator);
     }
 
     [Fact]
-    public async Task LabelIsWhitespace()
+    public void LabelIsWhitespace()
     {
         // arrange
         var compensator = new Compensator();
 
         // act
         var label = " ";
-        var tag = await compensator.CreateTagAsync(label).ConfigureAwait(false);
+        var tag = compensator.CreateTag(label);
 
         // assert
         Assert.NotNull(tag);
@@ -93,72 +93,72 @@ public class CreateTagAsync : TestBase
 
         Assert.Equal(CompensatorStatus.Executing, compensator.Status);
 
-        await AssertInternalCompensationOrderAsync(compensator).ConfigureAwait(false);
+        AssertInternalCompensationOrder(compensator);
     }
 
     [Fact]
-    public async Task StatusIsCompensated()
+    public void StatusIsCompensated()
     {
         // arrange
         var compensator = new Compensator();
         var status = CompensatorStatus.Compensated;
-        await ArrangeStatusAsync(compensator, status).ConfigureAwait(false);
+        ArrangeStatus(compensator, status);
 
         // act
-        var exception = await Assert.ThrowsAsync<CompensatorStatusException>(async () =>
-            await compensator.CreateTagAsync().ConfigureAwait(false)
-        ).ConfigureAwait(false);
+        var exception = Assert.Throws<CompensatorStatusException>(() =>
+            compensator.CreateTag()
+        );
 
         // assert
         Assert.Equal(ExpectedMessages.CompensatorStatusIs(status), exception.Message);
     }
 
     [Fact]
-    public async Task StatusIsCompensating()
+    public void StatusIsCompensating()
     {
         // arrange
         var compensator = new Compensator();
         var status = CompensatorStatus.Compensating;
-        await ArrangeStatusAsync(compensator, status).ConfigureAwait(false);
+        ArrangeStatus(compensator, status);
 
         // act
-        var exception = await Assert.ThrowsAsync<CompensatorStatusException>(async () =>
-            await compensator.CreateTagAsync().ConfigureAwait(false)
-        ).ConfigureAwait(false);
+        var exception = Assert.Throws<CompensatorStatusException>(() =>
+            compensator.CreateTag()
+        );
 
         // assert
         Assert.Equal(ExpectedMessages.CompensatorStatusIs(status), exception.Message);
     }
 
     [Fact]
-    public async Task StatusIsFailedToCompensate()
+    public void StatusIsFailedToCompensate()
     {
         // arrange
         var compensator = new Compensator();
         var status = CompensatorStatus.FailedToCompensate;
-        await ArrangeStatusAsync(compensator, status).ConfigureAwait(false);
+        ArrangeStatus(compensator, status);
 
         // act
-        var exception = await Assert.ThrowsAsync<CompensatorStatusException>(async () =>
-            await compensator.CreateTagAsync().ConfigureAwait(false)
-        ).ConfigureAwait(false);
+        var exception = Assert.Throws<CompensatorStatusException>(() =>
+            compensator.CreateTag()
+        );
 
         // assert
         Assert.Equal(ExpectedMessages.CompensatorStatusIs(status), exception.Message);
     }
 
     [Fact]
-    public async Task StatusIsFailedToExecute()
+    public void StatusIsFailedToExecute()
     {
         // arrange
         var compensator = new Compensator();
         var status = CompensatorStatus.FailedToExecute;
-        await ArrangeStatusAsync(compensator, status).ConfigureAwait(false);
+        ArrangeStatus(compensator, status);
 
         // act
-        var exception = await Assert.ThrowsAsync<CompensatorStatusException>(async () =>
-            await compensator.CreateTagAsync().ConfigureAwait(false)
-        ).ConfigureAwait(false);
+        var exception = Assert.Throws<CompensatorStatusException>(() =>
+            compensator.CreateTag()
+        );
 
         // assert
         Assert.Equal(ExpectedMessages.CompensatorStatusIs(status), exception.Message);

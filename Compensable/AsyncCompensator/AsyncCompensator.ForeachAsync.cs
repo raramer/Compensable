@@ -6,6 +6,15 @@ namespace Compensable
 {
     partial class AsyncCompensator
     {
+        /// <summary>
+        /// Runs an <i>execution</i> for each enumerated <i>item</i>. If successful, an item specific <i>compensation</i> is added to a tagged position in the compensation stack.
+        /// </summary>
+        /// <typeparam name="TItem">The type of the item.</typeparam>
+        /// <param name="items">The items to enumerate.</param>
+        /// <param name="execution">The execution to run.</param>
+        /// <param name="compensation">The compensation to add to the compensation stack.</param>
+        /// <param name="compensateAtTag">A tagged position in the compensation stack.</param>
+        /// <returns>A task that represents running the executions.</returns>
         public async Task ForeachAsync<TItem>(IEnumerable<TItem> items, Func<TItem, Task> execution, Func<TItem, Task> compensation, Tag compensateAtTag)
         {
             await ExecuteAsync(
@@ -32,36 +41,109 @@ namespace Compensable
         }
 
         #region Items + Execution Overloads
+        /// <summary>
+        /// Runs an <i>execution</i> for each enumerated <i>item</i>.
+        /// </summary>
+        /// <typeparam name="TItem">The type of the item.</typeparam>
+        /// <param name="items">The items to enumerate.</param>
+        /// <param name="execution">The execution to run.</param>
+        /// <returns>A task that represents running the executions.</returns>
         public async Task ForeachAsync<TItem>(IEnumerable<TItem> items, Action<TItem> execution)
             => await ForeachAsync<TItem>(items, execution.Awaitable(), default(Func<TItem, Task>), default(Tag)).ConfigureAwait(false);
 
+        /// <summary>
+        /// Runs an <i>execution</i> for each enumerated <i>item</i>.
+        /// </summary>
+        /// <typeparam name="TItem">The type of the item.</typeparam>
+        /// <param name="items">The items to enumerate.</param>
+        /// <param name="execution">The execution to run.</param>
+        /// <returns>A task that represents running the executions.</returns>
         public async Task ForeachAsync<TItem>(IEnumerable<TItem> items, Func<TItem, Task> execution)
             => await ForeachAsync<TItem>(items, execution, default(Func<TItem, Task>), default(Tag)).ConfigureAwait(false);
         #endregion
 
         #region Items + Execution + Compensation Overloads
+        /// <summary>
+        /// Runs an <i>execution</i> for each enumerated <i>item</i>. If successful, an item specific <i>compensation</i> is added to the compensation stack.
+        /// </summary>
+        /// <typeparam name="TItem">The type of the item.</typeparam>
+        /// <param name="items">The items to enumerate.</param>
+        /// <param name="execution">The execution to run.</param>
+        /// <param name="compensation">The compensation to add to the compensation stack.</param>
+        /// <returns>A task that represents running the executions.</returns>
         public async Task ForeachAsync<TItem>(IEnumerable<TItem> items, Action<TItem> execution, Action<TItem> compensation)
             => await ForeachAsync<TItem>(items, execution.Awaitable(), compensation.Awaitable(), default(Tag)).ConfigureAwait(false);
 
+        /// <summary>
+        /// Runs an <i>execution</i> for each enumerated <i>item</i>. If successful, an item specific <i>compensation</i> is added to the compensation stack.
+        /// </summary>
+        /// <typeparam name="TItem">The type of the item.</typeparam>
+        /// <param name="items">The items to enumerate.</param>
+        /// <param name="execution">The execution to run.</param>
+        /// <param name="compensation">The compensation to add to the compensation stack.</param>
+        /// <returns>A task that represents running the executions.</returns>
         public async Task ForeachAsync<TItem>(IEnumerable<TItem> items, Action<TItem> execution, Func<TItem, Task> compensation)
             => await ForeachAsync<TItem>(items, execution.Awaitable(), compensation, default(Tag)).ConfigureAwait(false);
 
 
+        /// <summary>
+        /// Runs an <i>execution</i> for each enumerated <i>item</i>. If successful, an item specific <i>compensation</i> is added to the compensation stack.
+        /// </summary>
+        /// <typeparam name="TItem">The type of the item.</typeparam>
+        /// <param name="items">The items to enumerate.</param>
+        /// <param name="execution">The execution to run.</param>
+        /// <param name="compensation">The compensation to add to the compensation stack.</param>
+        /// <returns>A task that represents running the executions.</returns>
         public async Task ForeachAsync<TItem>(IEnumerable<TItem> items, Func<TItem, Task> execution, Action<TItem> compensation)
             => await ForeachAsync<TItem>(items, execution, compensation.Awaitable(), default(Tag)).ConfigureAwait(false);
 
+        /// <summary>
+        /// Runs an <i>execution</i> for each enumerated <i>item</i>. If successful, an item specific <i>compensation</i> is added to the compensation stack.
+        /// </summary>
+        /// <typeparam name="TItem">The type of the item.</typeparam>
+        /// <param name="items">The items to enumerate.</param>
+        /// <param name="execution">The execution to run.</param>
+        /// <param name="compensation">The compensation to add to the compensation stack.</param>
+        /// <returns>A task that represents running the executions.</returns>
         public async Task ForeachAsync<TItem>(IEnumerable<TItem> items, Func<TItem, Task> execution, Func<TItem, Task> compensation)
             => await ForeachAsync<TItem>(items, execution, compensation, default(Tag)).ConfigureAwait(false);
         #endregion
 
         #region Items + Execution + Compensation + CompensateAtTag Overloads
+        /// <summary>
+        /// Runs an <i>execution</i> for each enumerated <i>item</i>. If successful, an item specific <i>compensation</i> is added to a tagged position in the compensation stack.
+        /// </summary>
+        /// <typeparam name="TItem">The type of the item.</typeparam>
+        /// <param name="items">The items to enumerate.</param>
+        /// <param name="execution">The execution to run.</param>
+        /// <param name="compensation">The compensation to add to the compensation stack.</param>
+        /// <param name="compensateAtTag">A tagged position in the compensation stack.</param>
+        /// <returns>A task that represents running the executions.</returns>
         public async Task ForeachAsync<TItem>(IEnumerable<TItem> items, Action<TItem> execution, Action<TItem> compensation, Tag compensateAtTag)
             => await ForeachAsync<TItem>(items, execution.Awaitable(), compensation.Awaitable(), compensateAtTag).ConfigureAwait(false);
 
+        /// <summary>
+        /// Runs an <i>execution</i> for each enumerated <i>item</i>. If successful, an item specific <i>compensation</i> is added to a tagged position in the compensation stack.
+        /// </summary>
+        /// <typeparam name="TItem">The type of the item.</typeparam>
+        /// <param name="items">The items to enumerate.</param>
+        /// <param name="execution">The execution to run.</param>
+        /// <param name="compensation">The compensation to add to the compensation stack.</param>
+        /// <param name="compensateAtTag">A tagged position in the compensation stack.</param>
+        /// <returns>A task that represents running the executions.</returns>
         public async Task ForeachAsync<TItem>(IEnumerable<TItem> items, Action<TItem> execution, Func<TItem, Task> compensation, Tag compensateAtTag)
             => await ForeachAsync<TItem>(items, execution.Awaitable(), compensation, compensateAtTag).ConfigureAwait(false);
 
 
+        /// <summary>
+        /// Runs an <i>execution</i> for each enumerated <i>item</i>. If successful, an item specific <i>compensation</i> is added to a tagged position in the compensation stack.
+        /// </summary>
+        /// <typeparam name="TItem">The type of the item.</typeparam>
+        /// <param name="items">The items to enumerate.</param>
+        /// <param name="execution">The execution to run.</param>
+        /// <param name="compensation">The compensation to add to the compensation stack.</param>
+        /// <param name="compensateAtTag">A tagged position in the compensation stack.</param>
+        /// <returns>A task that represents running the executions.</returns>
         public async Task ForeachAsync<TItem>(IEnumerable<TItem> items, Func<TItem, Task> execution, Action<TItem> compensation, Tag compensateAtTag)
             => await ForeachAsync<TItem>(items, execution, compensation.Awaitable(), compensateAtTag).ConfigureAwait(false);
         #endregion

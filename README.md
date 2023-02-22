@@ -18,12 +18,22 @@ dotnet add package Compensable
 
 
 ## How to get started
-1. Define a compensator.
+1. Define a compensator. 
+
+   *Compensator* is for use in synchronous contexts and only supports synchronous executions, compensations, and tests.
 
    ```csharp
    // using Compensable;
-   var compensator = new AsyncCompensator();
+   var compensator = new Compensator();
    ```
+
+   *AsyncCompensator* is for use in asynchronous contexts and supports _both_ synchronous and asynchronous executions, compensations, and tests.  
+
+   ```csharp
+   // using Compensable;
+   var asyncCompensator = new AsyncCompensator();
+   ```
+
 
 2. Execute the steps of your workflow in the context of the compensator.  
 
@@ -33,77 +43,126 @@ dotnet add package Compensable
    
    * If an exception is thrown when calling a compensation, then a `CompensationException` is thrown that contains **WhileExecuting** and **WhileCompensating** properties and whose inner exception is also the original WhileExecuting exception. See **CompensateAsync** for its alternate behavior.
    
-   _Overloads are available for calling async and non-async target methods, non-method tests, and steps that do not require compensation._
+   _Overloads are available for steps that do not require compensation, non-method-based tests, and for AsyncCompensator, calling both async and non-async target methods._
 
-   * **DoAsync** - executes a step that does not return a result.
+   * **Do / DoAsync** - executes a step that does not return a result.
+
+     ```csharp
+     compensator.Do(
+         execution: () => step(),
+         compensation: () => compensateStep(),
+         compensateAtTag: null);
+     ```
      
      ```csharp
-     await compensator.DoAsync(
+     await asyncCompensator.DoAsync(
          execution: async () => await stepAsync(),
          compensation: async () => await compensateStepAsync(),
          compensateAtTag: null);
      ```
 
-   * **GetAsync** - executes a step that returns a *result*.  
+   * **Get / GetAsync** - executes a step that returns a *result*.  
    
      Its compensation can optionally define a *_result* parameter that is equivalent to *result*, but will be unaffected if *result* is reassigned.  Be aware that if *result* is an object whose properties are reassigned, the *compensation* will be affected as well.
      
      ```csharp
-     var result = await compensator.GetAsync(
+     var result = compensator.Get(
+         execution: () => step(),
+         compensation: (_result) => compensateStep(_result),
+         compensateAtTag: null);
+     ```
+     
+     ```csharp
+     var result = await asyncCompensator.GetAsync(
          execution: async () => await stepAsync(),
          compensation: async (_result) => await compensateStepAsync(_result),
          compensateAtTag: null);
      ```
 
-   * **DoIfAsync** - executes a step if its *test* evaluates to true.
+   * **DoIf / DoIfAsync** - executes a step if its *test* evaluates to true.
 
      ```csharp
-     await compensator.DoIfAsync(
+     compensator.DoIf(
+         test: () => test(),
+         execution: () => step(),
+         compensation: () => compensateStep(),
+         compensateAtTag: null);
+     ```
+
+     ```csharp
+     await asyncCompensator.DoIfAsync(
          test: async () => await testAsync(),
          execution: async () => await stepAsync(),
          compensation: async () => await compensateStepAsync(),
          compensateAtTag: null);
      ```
 
-   * **ForeachAsync** - executes a step per *item* in an IEnumerable&lt;T&gt;.  
+   * **Foreach / ForeachAsync** - executes a step per *item* in an IEnumerable&lt;T&gt;.  
    
      If the item enumerator or execution throws an exception, then remaining items are not executed.
 
      ```csharp
      // var items = new[] { "item1", "item2", "item3" };
-     await compensator.ForeachAsync(
+     compensator.Foreach(
+         items: items,
+         execution: (item) => step(item),
+         compensation: (item) => compensateStep(item),
+         compensateAtTag: null);
+     ```
+
+     ```csharp
+     // var items = new[] { "item1", "item2", "item3" };
+     await asyncCompensator.ForeachAsync(
          items: items,
          execution: async (item) => await stepAsync(item),
          compensation: async (item) => await compensateStepAsync(item),
          compensateAtTag: null);
      ```
 
-   * **AddCompensationAsync** - defines a step that only provides compensation.
+   * **AddCompensation / AddCompensationAsync** - defines a step that only provides compensation.
      
      ```csharp
-     await compensator.AddCompensationAsync(
+     compensator.AddCompensation(
+         compensation: () => compensateStep(),
+         compensateAtTag: null);
+     ```
+     
+     ```csharp
+     await asyncCompensator.AddCompensationAsync(
          compensation: async () => await compensateStepAsync(),
          compensateAtTag: null);
      ```
 
-   * **CommitAsync** - clears all defined compensations from the stack without calling them.
+   * **Commit / CommitAsync** - clears all defined compensations from the stack without calling them.
     
      ```csharp
-     await compensator.CommitAsync();
+     compensator.Commit();
      ```
 
-   * **CompensateAsync** - invokes compensation directly.  
+     ```csharp
+     await asyncCompensator.CommitAsync();
+     ```
+
+   * **Compensate / CompensateAsync** - invokes compensation directly.  
    
      If an exception occurs when calling a compensation, then a `CompensationException` is thrown that only contains a **WhileCompensating** value and whose inner exception is also the WhileCompensating exception.
      
      ```csharp
-     await compensator.CompensateAsync();
+     compensator.Compensate();
+     ```
+     
+     ```csharp
+     await asyncCompensator.CompensateAsync();
      ```
 
-   * **CreateTagAsync** - defines a "tagged" position in the stack.  See **Tags** for more details.
+   * **CreateTag / CreateTagAsync** - defines a "tagged" position in the stack.  See **Tags** for more details.
 
      ```csharp
-     var tag = await compensator.CreateTagAsync();
+     var tag = compensator.CreateTag();
+     ```
+
+     ```csharp
+     var tag = await asyncCompensator.CreateTagAsync();
      ```
 
 ## Status
@@ -136,22 +195,22 @@ _Tags should be used sparingly!_
 
    ```csharp
    // create tag
-   var tag = await compensator.CreateTagAsync();
+   var tag = await asyncCompensator.CreateTagAsync();
 
    // step 1
-   await compensator.DoAsync(
+   await asyncCompensator.DoAsync(
        async () => await step1Async(),
        compensation: async () => await compensateStep1Async());
 
    // step 2
-   await compensator.DoAsync(
+   await asyncCompensator.DoAsync(
        async () => await step2Async(),
        compensation: async () => await compensateStep2Async(),
        compensateAtTag: tag);
 
    // compensate
    // compensateStep1Async will be called first, followed by compensateStep2Async.
-   await compensator.CompensateAsync();
+   await asyncCompensator.CompensateAsync();
    ```
 
 ## Practical Example

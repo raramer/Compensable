@@ -5,6 +5,13 @@ namespace Compensable
 {
     partial class AsyncCompensator
     {
+        /// <summary>
+        /// Runs the <i>execution</i>. If successful, the <i>compensation</i> is added to a tagged position in the compensation stack.
+        /// </summary>
+        /// <param name="execution">The execution to run.</param>
+        /// <param name="compensation">The compensation to add to the compensation stack.</param>
+        /// <param name="compensateAtTag">A tagged position in the compensation stack.</param>
+        /// <returns>A task that represents running the execution.</returns>
         public async Task DoAsync(Func<Task> execution, Func<Task> compensation, Tag compensateAtTag)
         {
             await ExecuteAsync(
@@ -23,36 +30,91 @@ namespace Compensable
         }
 
         #region Execution Overloads
+        /// <summary>
+        /// Runs the <i>execution</i>.
+        /// </summary>
+        /// <param name="execution">The execution to run.</param>
+        /// <returns>A task that represents running the execution.</returns>
         public async Task DoAsync(Action execution)
             => await DoAsync(execution.Awaitable(), default(Func<Task>), default(Tag)).ConfigureAwait(false);
 
+        /// <summary>
+        /// Runs the <i>execution</i>.
+        /// </summary>
+        /// <param name="execution">The execution to run.</param>
+        /// <returns>A task that represents running the execution.</returns>
         public async Task DoAsync(Func<Task> execution)
             => await DoAsync(execution, default(Func<Task>), default(Tag)).ConfigureAwait(false);
         #endregion
 
         #region Execution + Compensation Overloads
+        /// <summary>
+        /// Runs the <i>execution</i>. If successful, the <i>compensation</i> is added to the compensation stack.
+        /// </summary>
+        /// <param name="execution">The execution to run.</param>
+        /// <param name="compensation">The compensation to add to the compensation stack.</param>
+        /// <returns>A task that represents running the execution.</returns>
         public async Task DoAsync(Action execution, Action compensation)
             => await DoAsync(execution.Awaitable(), compensation.Awaitable(), default(Tag)).ConfigureAwait(false);
 
+        /// <summary>
+        /// Runs the <i>execution</i>. If successful, the <i>compensation</i> is added to the compensation stack.
+        /// </summary>
+        /// <param name="execution">The execution to run.</param>
+        /// <param name="compensation">The compensation to add to the compensation stack.</param>
+        /// <returns>A task that represents running the execution.</returns>
         public async Task DoAsync(Action execution, Func<Task> compensation)
             => await DoAsync(execution.Awaitable(), compensation, default(Tag)).ConfigureAwait(false);
 
 
+        /// <summary>
+        /// Runs the <i>execution</i>. If successful, the <i>compensation</i> is added to the compensation stack.
+        /// </summary>
+        /// <param name="execution">The execution to run.</param>
+        /// <param name="compensation">The compensation to add to the compensation stack.</param>
+        /// <returns>A task that represents running the execution.</returns>
         public async Task DoAsync(Func<Task> execution, Action compensation)
             => await DoAsync(execution, compensation.Awaitable(), default(Tag)).ConfigureAwait(false);
 
+        /// <summary>
+        /// Runs the <i>execution</i>. If successful, the <i>compensation</i> is added to the compensation stack.
+        /// </summary>
+        /// <param name="execution">The execution to run.</param>
+        /// <param name="compensation">The compensation to add to the compensation stack.</param>
+        /// <returns>A task that represents running the execution.</returns>
         public async Task DoAsync(Func<Task> execution, Func<Task> compensation)
             => await DoAsync(execution, compensation, default(Tag)).ConfigureAwait(false);
         #endregion
 
         #region Execution + Compensation + CompensateAtTag Overloads
+        /// <summary>
+        /// Runs the <i>execution</i>. If successful, the <i>compensation</i> is added to a tagged position in the compensation stack.
+        /// </summary>
+        /// <param name="execution">The execution to run.</param>
+        /// <param name="compensation">The compensation to add to the compensation stack.</param>
+        /// <param name="compensateAtTag">A tagged position in the compensation stack.</param>
+        /// <returns>A task that represents running the execution.</returns>
         public async Task DoAsync(Action execution, Action compensation, Tag compensateAtTag)
             => await DoAsync(execution.Awaitable(), compensation.Awaitable(), compensateAtTag).ConfigureAwait(false);
 
+        /// <summary>
+        /// Runs the <i>execution</i>. If successful, the <i>compensation</i> is added to a tagged position in the compensation stack.
+        /// </summary>
+        /// <param name="execution">The execution to run.</param>
+        /// <param name="compensation">The compensation to add to the compensation stack.</param>
+        /// <param name="compensateAtTag">A tagged position in the compensation stack.</param>
+        /// <returns>A task that represents running the execution.</returns>
         public async Task DoAsync(Action execution, Func<Task> compensation, Tag compensateAtTag)
             => await DoAsync(execution.Awaitable(), compensation, compensateAtTag).ConfigureAwait(false);
 
 
+        /// <summary>
+        /// Runs the <i>execution</i>. If successful, the <i>compensation</i> is added to a tagged position in the compensation stack.
+        /// </summary>
+        /// <param name="execution">The execution to run.</param>
+        /// <param name="compensation">The compensation to add to the compensation stack.</param>
+        /// <param name="compensateAtTag">A tagged position in the compensation stack.</param>
+        /// <returns>A task that represents running the execution.</returns>
         public async Task DoAsync(Func<Task> execution, Action compensation, Tag compensateAtTag)
             => await DoAsync(execution, compensation.Awaitable(), compensateAtTag).ConfigureAwait(false);
         #endregion
