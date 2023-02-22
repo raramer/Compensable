@@ -6,8 +6,14 @@ namespace Compensable
     [Serializable]
     public class CompensationException : Exception
     {
+        /// <summary>
+        /// The exception that was thrown while compensating.
+        /// </summary>
         public Exception WhileCompensating { get; }
 
+        /// <summary>
+        /// The exception that was thrown while executing.
+        /// </summary>
         public Exception WhileExecuting { get; }
 
         internal CompensationException(Exception whileCompensating, Exception whileExecuting) : base(

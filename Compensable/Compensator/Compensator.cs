@@ -11,12 +11,22 @@ namespace Compensable
         private readonly SemaphoreSlim _statusLock;
         private readonly CompensationStack<Action> _compensationStack;
 
+        /// <summary>
+        /// The status of the compensator.
+        /// </summary>
         public CompensatorStatus Status { get; private set; }
 
+        /// <summary>
+        /// Creates a new synchronous compensator.
+        /// </summary>
         public Compensator() : this(CancellationToken.None)
         {
         }
 
+        /// <summary>
+        /// Creates a new synchronous compensator.
+        /// </summary>
+        /// <param name="cancellationToken">A cancellation token.</param>
         public Compensator(CancellationToken cancellationToken)
         {
             _cancellationToken = cancellationToken;

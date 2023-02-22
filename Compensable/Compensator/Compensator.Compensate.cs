@@ -4,6 +4,9 @@ namespace Compensable
 {
     partial class Compensator
     {
+        /// <summary>
+        /// Runs the compensations in the compensation stack without requiring a failed execution.
+        /// </summary>
         public void Compensate()
             => Compensate(null);
 
