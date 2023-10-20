@@ -176,11 +176,13 @@ There are four types that apply to different scenarios.
 * **AsyncCompensation** - an asynchronous compensation.
 * **AsyncCompensation&lt;TResult&gt;** - an asynchronous compensation with a Result.
 
-When used with a compensator, the returned compensation is added to the compensation stack, and in the case of _Get_ / _GetAsync_ steps, the applicable Result is returned. When used without a compensator, each compensation type defines a `Compensate` / `CompensateAsync` method that can be called to invoke the defined compensation, and in the case of a (Async)Compensation&lt;TResult&gt; a Result property contains the result.
+Each type defines one or more constructors that accept a compensation action, and a result for TResult types.  In addition, each compensation also defines either a static *_Noop_* property or method for use when a step's internal logic does not need compensation.
 
-When a step's internal logic does not need compensation in certain scenarios, each compensation also defines a static `Noop` method that can be used in place of a call to the constructor. 
+When used with a compensator, the returned compensation is added to the compensation stack, and in the case of _Get_ / _GetAsync_ steps, the applicable result is returned. 
 
-_Disclaimer: this example is to demonstrate the use of Compensations and should not be considered a good example of a secure application._
+When used without a compensator, each compensation type defines a _Compensate_ / _CompensateAsync_ method that can be called to invoke the defined compensation. In the case of a (Async)Compensation&lt;TResult&gt; a Result property contains the result, but the compensation type also implements an implicit type conversion.
+
+_Disclaimer: this example is to demonstrate the use of Compensations and should NOT be considered a good example of application security._
 
    ```csharp
    internal enum AccountStatus { Active, Inactive };
@@ -214,7 +216,7 @@ _Disclaimer: this example is to demonstrate the use of Compensations and should 
 
        public async Task<AsyncCompensation<string>> GenerateSsoTokenAsync()
        {
-           // generate a token (pseudo random)
+           // generate a token
            var token = Guid.NewGuid().ToString("n");
 
            // store token

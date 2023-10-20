@@ -36,7 +36,7 @@
 
             public async Task<AsyncCompensation<string>> GenerateSsoTokenAsync()
             {
-                // generate a token (pseudo random)
+                // generate a token
                 var token = Guid.NewGuid().ToString("n");
 
                 // store token
