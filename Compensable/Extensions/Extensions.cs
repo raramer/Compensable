@@ -5,6 +5,46 @@ namespace Compensable
 {
     internal static class Extensions
     {
+
+        internal static Func<Task<AsyncCompensation>> AsAsyncCompensation(this Func<Compensation> execution)
+        {
+            return execution == null
+                ? default(Func<Task<AsyncCompensation>>)
+                : () =>
+                {
+                    var compensation = execution();
+                    Validate.ExecutionCompensation(compensation);
+
+                    return Task.FromResult(new AsyncCompensation(compensation.Compensate));
+                };
+        }
+
+        internal static Func<T1, Task<AsyncCompensation>> AsAsyncCompensation<T1>(this Func<T1, Compensation> execution)
+        {
+            return execution == null
+                ? default(Func<T1, Task<AsyncCompensation>>)
+                : (T1 item) =>
+                {
+                    var compensation = execution(item);
+                    Validate.ExecutionCompensation(compensation);
+
+                    return Task.FromResult(new AsyncCompensation(compensation.Compensate));
+                };
+        }
+
+        internal static Func<Task<AsyncCompensation<TResult>>> AsAsyncCompensation<TResult>(this Func<Compensation<TResult>> execution)
+        {
+            return execution == null
+                ? default(Func<Task<AsyncCompensation<TResult>>>)
+                : () =>
+                {
+                    var compensation_result = execution();
+                    Validate.ExecutionCompensation(compensation_result);
+
+                    return Task.FromResult(new AsyncCompensation<TResult>(compensation_result.Result, compensation_result.Compensate));
+                };
+        }
+
         internal static Func<Task> Awaitable(this Action action)
         {
             return action == null

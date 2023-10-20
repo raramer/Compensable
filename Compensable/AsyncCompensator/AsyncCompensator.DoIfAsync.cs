@@ -34,6 +34,35 @@ namespace Compensable
                 }).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Runs the <i>execution</i> only if <i>test</i> evaluates to true. If successful, the returned <i>AsyncCompensation</i> is added to a tagged position in the compensation stack.
+        /// </summary>
+        /// <param name="test">The test to evaluate.</param>
+        /// <param name="execution">The execution to run.</param>
+        /// <param name="compensateAtTag">A tagged position in the compensation stack.</param>
+        /// <returns>A task that represents evaluating the test and running the execution.</returns>
+        public async Task DoIfAsync(Func<Task<bool>> test, Func<Task<AsyncCompensation>> execution, Tag compensateAtTag)
+        {
+            await ExecuteAsync(
+                validation: () =>
+                {
+                    Validate.Test(test);
+                    Validate.Execution(execution);
+                    _compensationStack.ValidateTag(compensateAtTag);
+                },
+                execution: async () =>
+                {
+                    if (await test().ConfigureAwait(false))
+                    {
+                        var executionCompensation = await execution().ConfigureAwait(false);
+                        Validate.ExecutionCompensation(executionCompensation);
+
+                        if (executionCompensation.HasCompensation)
+                            _compensationStack.AddCompensation(executionCompensation.CompensateAsync, compensateAtTag);
+                    }
+                }).ConfigureAwait(false);
+        }
+
         #region Test + Execution Overloads
         /// <summary>
         /// Runs the <i>execution</i> only if <i>test</i> evaluates to true.
@@ -90,6 +119,64 @@ namespace Compensable
         /// <returns>A task that represents evaluating the test and running the execution.</returns>
         public async Task DoIfAsync(Func<Task<bool>> test, Func<Task> execution)
             => await DoIfAsync(test, execution, default(Func<Task>), default(Tag)).ConfigureAwait(false);
+        #endregion
+
+        #region Test + Compensable Execution Overloads
+        /// <summary>
+        /// Runs the <i>execution</i> only if <i>test</i> evaluates to true. If successful, the returned <i>Compensation</i> is added to the compensation stack.
+        /// </summary>
+        /// <param name="test">The test to evaluate.</param>
+        /// <param name="execution">The execution to run.</param>
+        /// <returns>A task that represents evaluating the test and running the execution.</returns>
+        public async Task DoIfAsync(bool test, Func<Compensation> execution)
+            => await DoIfAsync(() => Task.FromResult(test), execution.AsAsyncCompensation(), default(Tag)).ConfigureAwait(false);
+
+        /// <summary>
+        /// Runs the <i>execution</i> only if <i>test</i> evaluates to true. If successful, the returned <i>AsyncCompensation</i> is added to the compensation stack.
+        /// </summary>
+        /// <param name="test">The test to evaluate.</param>
+        /// <param name="execution">The execution to run.</param>
+        /// <returns>A task that represents evaluating the test and running the execution.</returns>
+        public async Task DoIfAsync(bool test, Func<Task<AsyncCompensation>> execution)
+            => await DoIfAsync(() => Task.FromResult(test), execution, default(Tag)).ConfigureAwait(false);
+
+
+        /// <summary>
+        /// Runs the <i>execution</i> only if <i>test</i> evaluates to true. If successful, the returned <i>Compensation</i> is added to the compensation stack.
+        /// </summary>
+        /// <param name="test"></param>
+        /// <param name="execution"></param>
+        /// <returns>A task that represents evaluating the test and running the execution.</returns>
+        public async Task DoIfAsync(Func<bool> test, Func<Compensation> execution)
+            => await DoIfAsync(test.Awaitable(), execution.AsAsyncCompensation(), default(Tag)).ConfigureAwait(false);
+
+        /// <summary>
+        /// Runs the <i>execution</i> only if <i>test</i> evaluates to true. If successful, the returned <i>AsyncCompensation</i> is added to the compensation stack.
+        /// </summary>
+        /// <param name="test">The test to evaluate.</param>
+        /// <param name="execution">The execution to run.</param>
+        /// <returns>A task that represents evaluating the test and running the execution.</returns>
+        public async Task DoIfAsync(Func<bool> test, Func<Task<AsyncCompensation>> execution)
+            => await DoIfAsync(test.Awaitable(), execution, default(Tag)).ConfigureAwait(false);
+
+
+        /// <summary>
+        /// Runs the <i>execution</i> only if <i>test</i> evaluates to true. If successful, the returned <i>Compensation</i> is added to the compensation stack.
+        /// </summary>
+        /// <param name="test">The test to evaluate.</param>
+        /// <param name="execution">The execution to run.</param>
+        /// <returns>A task that represents evaluating the test and running the execution.</returns>
+        public async Task DoIfAsync(Func<Task<bool>> test, Func<Compensation> execution)
+            => await DoIfAsync(test, execution.AsAsyncCompensation(), default(Tag)).ConfigureAwait(false);
+
+        /// <summary>
+        /// Runs the <i>execution</i> only if <i>test</i> evaluates to true. If successful, the returned <i>AsyncCompensation</i> is added to the compensation stack.
+        /// </summary>
+        /// <param name="test">The test to evaluate.</param>
+        /// <param name="execution">The execution to run.</param>
+        /// <returns>A task that represents evaluating the test and running the execution.</returns>
+        public async Task DoIfAsync(Func<Task<bool>> test, Func<Task<AsyncCompensation>> execution)
+            => await DoIfAsync(test, execution, default(Tag)).ConfigureAwait(false);
         #endregion
 
         #region Test + Execution + Compensation Overloads
@@ -339,6 +426,60 @@ namespace Compensable
         /// <returns>A task that represents evaluating the test and running the execution.</returns>
         public async Task DoIfAsync(Func<Task<bool>> test, Func<Task> execution, Action compensation, Tag compensateAtTag)
             => await DoIfAsync(test, execution, compensation.Awaitable(), compensateAtTag).ConfigureAwait(false);
+        #endregion
+
+        #region Test + Compensable Execution + CompensateAtTag Overloads
+        /// <summary>
+        /// Runs the <i>execution</i> only if <i>test</i> evaluates to true. If successful, the returned <i>Compensation</i> is added to the compensation stack.
+        /// </summary>
+        /// <param name="test">The test to evaluate.</param>
+        /// <param name="execution">The execution to run.</param>
+        /// <param name="compensateAtTag">A tagged position in the compensation stack.</param>
+        /// <returns>A task that represents evaluating the test and running the execution.</returns>
+        public async Task DoIfAsync(bool test, Func<Compensation> execution, Tag compensateAtTag)
+            => await DoIfAsync(() => Task.FromResult(test), execution.AsAsyncCompensation(), compensateAtTag).ConfigureAwait(false);
+
+        /// <summary>
+        /// Runs the <i>execution</i> only if <i>test</i> evaluates to true. If successful, the returned <i>AsyncCompensation</i> is added to the compensation stack.
+        /// </summary>
+        /// <param name="test">The test to evaluate.</param>
+        /// <param name="execution">The execution to run.</param>
+        /// <param name="compensateAtTag">A tagged position in the compensation stack.</param>
+        /// <returns>A task that represents evaluating the test and running the execution.</returns>
+        public async Task DoIfAsync(bool test, Func<Task<AsyncCompensation>> execution, Tag compensateAtTag)
+            => await DoIfAsync(() => Task.FromResult(test), execution, compensateAtTag).ConfigureAwait(false);
+
+
+        /// <summary>
+        /// Runs the <i>execution</i> only if <i>test</i> evaluates to true. If successful, the returned <i>Compensation</i> is added to the compensation stack.
+        /// </summary>
+        /// <param name="test"></param>
+        /// <param name="execution"></param>
+        /// <param name="compensateAtTag">A tagged position in the compensation stack.</param>
+        /// <returns>A task that represents evaluating the test and running the execution.</returns>
+        public async Task DoIfAsync(Func<bool> test, Func<Compensation> execution, Tag compensateAtTag)
+            => await DoIfAsync(test.Awaitable(), execution.AsAsyncCompensation(), compensateAtTag).ConfigureAwait(false);
+
+        /// <summary>
+        /// Runs the <i>execution</i> only if <i>test</i> evaluates to true. If successful, the returned <i>AsyncCompensation</i> is added to the compensation stack.
+        /// </summary>
+        /// <param name="test">The test to evaluate.</param>
+        /// <param name="execution">The execution to run.</param>
+        /// <param name="compensateAtTag">A tagged position in the compensation stack.</param>
+        /// <returns>A task that represents evaluating the test and running the execution.</returns>
+        public async Task DoIfAsync(Func<bool> test, Func<Task<AsyncCompensation>> execution, Tag compensateAtTag)
+            => await DoIfAsync(test.Awaitable(), execution, compensateAtTag).ConfigureAwait(false);
+
+
+        /// <summary>
+        /// Runs the <i>execution</i> only if <i>test</i> evaluates to true. If successful, the returned <i>Compensation</i> is added to the compensation stack.
+        /// </summary>
+        /// <param name="test">The test to evaluate.</param>
+        /// <param name="execution">The execution to run.</param>
+        /// <param name="compensateAtTag">A tagged position in the compensation stack.</param>
+        /// <returns>A task that represents evaluating the test and running the execution.</returns>
+        public async Task DoIfAsync(Func<Task<bool>> test, Func<Compensation> execution, Tag compensateAtTag)
+            => await DoIfAsync(test, execution.AsAsyncCompensation(), compensateAtTag).ConfigureAwait(false);
         #endregion
     }
 }
