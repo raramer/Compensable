@@ -165,6 +165,71 @@ dotnet add package Compensable
      var tag = await asyncCompensator.CreateTagAsync();
      ```
 
+## Compensations
+
+Compensations are types that a step's execution can return that encapsulate the compensation logic so that a calling compensator does not have to know the implemenation.
+
+There are four types that apply to different scenarios. 
+
+* **Compensation** - a synchrous compensation.
+* **Compensation&lt;TResult&gt;** - a synchronous compensation with a Result.
+* **AsyncCompensation** - an asynchronous compensation.
+* **AsyncCompensation&lt;TResult&gt;** - an asynchronous compensation with a Result.
+
+Each type defines one or more constructors that accept a compensation action, and a result for TResult types.  In addition, each compensation also defines either a static *_Noop_* property or method for use when a step's internal logic does not need compensation.
+
+When used with a compensator, the returned compensation is added to the compensation stack, and in the case of _Get_ / _GetAsync_ steps, the applicable result is returned. 
+
+When used without a compensator, each compensation type defines a _Compensate_ / _CompensateAsync_ method that can be called to invoke the defined compensation. In the case of a (Async)Compensation&lt;TResult&gt; a Result property contains the result, but the compensation type also implements an implicit type conversion.
+
+_Disclaimer: this example is to demonstrate the use of Compensations and should NOT be considered a good example of application security._
+
+   ```csharp
+   internal enum AccountStatus { Active, Inactive };
+
+   internal class Account
+   {
+       private readonly ISsoTokenRepository _ssoTokenRepository;
+
+       public string Id { get; }
+
+       public AccountStatus Status { get; private set; }
+
+       public Compensation SetStatus(AccountStatus status)
+       {
+           // short-circuit status is already set
+           if (Status == status)
+               return Compensation.Noop;
+
+           // capture compensation data
+           var rollback = new { Status };
+
+           // update status
+           Status = status;
+
+           // return compensation
+           return new Compensation(() =>
+           {
+               Status = rollback.Status;
+           });
+       }
+
+       public async Task<AsyncCompensation<string>> GenerateSsoTokenAsync()
+       {
+           // generate a token
+           var token = Guid.NewGuid().ToString("n");
+
+           // store token
+           await _ssoTokenRepository.CreateAsync(Id, token);
+
+           // return token + compensation (in case an exception occurs and we need to delete token)
+           return new AsyncCompensation<string>(
+               result: token, 
+               compensation: _ssoTokenRepository.DeleteToken);
+       }
+   }
+   ```
+
 ## Status
 
 The compensator exposes a **Status** property that can be used to inspect its current internal state.  

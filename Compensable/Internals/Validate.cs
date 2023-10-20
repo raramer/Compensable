@@ -17,6 +17,12 @@ namespace Compensable
                 throw new ArgumentNullException(nameof(execution));
         }
 
+        internal static void ExecutionCompensation(IExecutionCompensation executionCompensation)
+        {
+            if (executionCompensation == null)
+                throw new ExecutionCompensationNullException();
+        }
+
         internal static void Items<T>(IEnumerable<T> items)
         {
             if (items == null)
