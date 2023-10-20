@@ -58,6 +58,7 @@ public class ItemHelper : ExecuteCompensateHelperBase
     {
     }
 
+    #pragma warning disable CS8604
     private ItemHelper(ItemEnumerationOptions enumerationOptions, ItemExecutionOptions executionOptions, ItemCompensationOptions compensationOptions, string? label)
         : base(executionOptions, compensationOptions, label)
     {
@@ -65,6 +66,7 @@ public class ItemHelper : ExecuteCompensateHelperBase
 
         EnumerationOptions = enumerationOptions;
     }
+    #pragma warning restore CS8604
 
     public override void AssertHelper()
     {
