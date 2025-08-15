@@ -1,38 +1,37 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Compensable
+namespace Compensable;
+
+internal static class Validate
 {
-    internal static class Validate
+    internal static void Compensation(Delegate compensation)
     {
-        internal static void Compensation(Delegate compensation)
-        {
-            if (compensation == null)
-                throw new ArgumentNullException(nameof(compensation));
-        }
+        if (compensation == null)
+            throw new ArgumentNullException(nameof(compensation));
+    }
 
-        internal static void Execution(Delegate execution)
-        {
-            if (execution == null)
-                throw new ArgumentNullException(nameof(execution));
-        }
+    internal static void Execution(Delegate execution)
+    {
+        if (execution == null)
+            throw new ArgumentNullException(nameof(execution));
+    }
 
-        internal static void ExecutionCompensation(IExecutionCompensation executionCompensation)
-        {
-            if (executionCompensation == null)
-                throw new ExecutionCompensationNullException();
-        }
+    internal static void ExecutionCompensation(IExecutionCompensation executionCompensation)
+    {
+        if (executionCompensation == null)
+            throw new ExecutionCompensationNullException();
+    }
 
-        internal static void Items<T>(IEnumerable<T> items)
-        {
-            if (items == null)
-                throw new ArgumentNullException(nameof(items));
-        }
+    internal static void Items<T>(IEnumerable<T> items)
+    {
+        if (items == null)
+            throw new ArgumentNullException(nameof(items));
+    }
 
-        internal static void Test(Delegate test)
-        {
-            if (test == null)
-                throw new ArgumentNullException(nameof(test));
-        }
+    internal static void Test(Delegate test)
+    {
+        if (test == null)
+            throw new ArgumentNullException(nameof(test));
     }
 }

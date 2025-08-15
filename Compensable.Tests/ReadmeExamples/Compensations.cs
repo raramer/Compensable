@@ -1,53 +1,52 @@
-﻿namespace Compensable.Tests.ReadmeExamples
+﻿namespace Compensable.Tests.ReadmeExamples;
+
+internal class Compensations
 {
-    internal class Compensations
+    #pragma warning disable CS8618, CS0649
+    interface ISsoTokenRepository { Task CreateAsync(string accountId, string token); Task DeleteToken(string token); }
+
+    internal enum AccountStatus { Active, Inactive };
+
+    internal class Account
     {
-        #pragma warning disable CS8618, CS0649
-        interface ISsoTokenRepository { Task CreateAsync(string accountId, string token); Task DeleteToken(string token); }
+        private readonly ISsoTokenRepository _ssoTokenRepository;
 
-        internal enum AccountStatus { Active, Inactive };
+        public string Id { get; }
 
-        internal class Account
+        public AccountStatus Status { get; private set; }
+
+        public Compensation SetStatus(AccountStatus status)
         {
-            private readonly ISsoTokenRepository _ssoTokenRepository;
+            // short-circuit status is already set
+            if (Status == status)
+                return Compensation.Noop;
 
-            public string Id { get; }
+            // capture compensation data
+            var rollback = new { Status };
 
-            public AccountStatus Status { get; private set; }
+            // update status
+            Status = status;
 
-            public Compensation SetStatus(AccountStatus status)
+            // return compensation
+            return new Compensation(() =>
             {
-                // short-circuit status is already set
-                if (Status == status)
-                    return Compensation.Noop;
-
-                // capture compensation data
-                var rollback = new { Status };
-
-                // update status
-                Status = status;
-
-                // return compensation
-                return new Compensation(() =>
-                {
-                    Status = rollback.Status;
-                });
-            }
-
-            public async Task<AsyncCompensation<string>> GenerateSsoTokenAsync()
-            {
-                // generate a token
-                var token = Guid.NewGuid().ToString("n");
-
-                // store token
-                await _ssoTokenRepository.CreateAsync(Id, token);
-
-                // return token + compensation (in case an exception occurs and we need to delete token)
-                return new AsyncCompensation<string>(
-                    result: token,
-                    compensation: _ssoTokenRepository.DeleteToken);
-            }
+                Status = rollback.Status;
+            });
         }
-        #pragma warning restore CS8618, CS0649
+
+        public async Task<AsyncCompensation<string>> GenerateSsoTokenAsync()
+        {
+            // generate a token
+            var token = Guid.NewGuid().ToString("n");
+
+            // store token
+            await _ssoTokenRepository.CreateAsync(Id, token);
+
+            // return token + compensation (in case an exception occurs and we need to delete token)
+            return new AsyncCompensation<string>(
+                result: token,
+                compensation: _ssoTokenRepository.DeleteToken);
+        }
     }
+    #pragma warning restore CS8618, CS0649
 }

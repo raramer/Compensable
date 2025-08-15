@@ -1,62 +1,61 @@
 using System;
 
-namespace Compensable
+namespace Compensable;
+
+partial class Compensator
 {
-    partial class Compensator
+    private void Execute(Action validation, Action execution)
     {
-        private void Execute(Action validation, Action execution)
+        VerifyCanExecute();
+
+        try
         {
-            VerifyCanExecute();
+            validation?.Invoke();
+
+            _executionLock.Wait(_cancellationToken);
 
             try
             {
-                validation?.Invoke();
+                VerifyCanExecute();
 
-                _executionLock.Wait(_cancellationToken);
-
-                try
-                {
-                    VerifyCanExecute();
-
-                    execution();
-                }
-                catch
-                {
-                    SetStatus(CompensatorStatus.FailedToExecute);
-                    throw;
-                }
-                finally
-                {
-                    _executionLock.Release();
-                }
+                execution();
             }
-            catch (Exception whileExecuting)
+            catch
             {
-                Compensate(whileExecuting);
+                SetStatus(CompensatorStatus.FailedToExecute);
                 throw;
             }
+            finally
+            {
+                _executionLock.Release();
+            }
         }
-
-        #region Execution Overloads
-        private void Execute(Action execution)
-            => Execute(default(Action), execution);
-        #endregion
-
-        #region Execution -> TResult Overloads
-        private TResult Execute<TResult>(Func<TResult> execution)
-            => Execute<TResult>(default(Action), execution);
-        #endregion
-
-        #region Validation + Execution -> TResult Overloads
-        private TResult Execute<TResult>(Action validation, Func<TResult> execution)
+        catch (Exception whileExecuting)
         {
-            var result = default(TResult);
-            Execute(validation, () => 
-            { 
-                result = execution(); 
-            });
-            return result;
+            Compensate(whileExecuting);
+            throw;
         }
-        #endregion
     }
+
+    #region Execution Overloads
+    private void Execute(Action execution)
+        => Execute(default(Action), execution);
+    #endregion
+
+    #region Execution -> TResult Overloads
+    private TResult Execute<TResult>(Func<TResult> execution)
+        => Execute<TResult>(default(Action), execution);
+    #endregion
+
+    #region Validation + Execution -> TResult Overloads
+    private TResult Execute<TResult>(Action validation, Func<TResult> execution)
+    {
+        var result = default(TResult);
+        Execute(validation, () => 
+        { 
+            result = execution(); 
+        });
+        return result;
+    }
+    #endregion
 }
