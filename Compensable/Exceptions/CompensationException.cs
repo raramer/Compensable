@@ -1,32 +1,20 @@
 ﻿using System;
-using System.Runtime.Serialization;
 
 namespace Compensable;
 
-[Serializable]
-public class CompensationException : Exception
+public class CompensationException(Exception whileCompensating, Exception whileExecuting) : Exception(
+    message: whileExecuting is null
+        ? $"While compensating: {whileCompensating?.Message}"
+        : $"While executing: {whileExecuting.Message}{Environment.NewLine}While compensating: {whileCompensating?.Message}",
+    innerException: whileExecuting ?? whileCompensating)
 {
     /// <summary>
     /// The exception that was thrown while compensating.
     /// </summary>
-    public Exception WhileCompensating { get; }
+    public Exception WhileCompensating { get; } = whileCompensating;
 
     /// <summary>
     /// The exception that was thrown while executing.
     /// </summary>
-    public Exception WhileExecuting { get; }
-
-    internal CompensationException(Exception whileCompensating, Exception whileExecuting) : base(
-        message: whileExecuting == null
-            ? $"While compensating: {whileCompensating?.Message}"
-            : $"While executing: {whileExecuting.Message}{Environment.NewLine}While compensating: {whileCompensating?.Message}",
-        innerException: whileExecuting ?? whileCompensating)
-    {
-        WhileCompensating = whileCompensating;
-        WhileExecuting = whileExecuting;
-    }
-
-    protected CompensationException(SerializationInfo info, StreamingContext context) : base(info, context)
-    {
-    }
+    public Exception WhileExecuting { get; } = whileExecuting;
 }
