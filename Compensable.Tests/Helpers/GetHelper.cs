@@ -122,7 +122,7 @@ public class GetHelper : ExecuteCompensateHelperBase
     }
     private async Task _CompensateAsync(object result)
     {
-        await Task.Delay(1);
+        await Task.Yield();
         _Compensate(result);
     }
 
@@ -135,7 +135,7 @@ public class GetHelper : ExecuteCompensateHelperBase
     }
     private async Task<object> _ExecuteAsync()
     {
-        await Task.Delay(1);
+        await Task.Yield();
         return _Execute();
     }
 }
