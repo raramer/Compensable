@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-
-namespace Compensable;
+﻿namespace Compensable;
 
 public sealed class AsyncCompensation<TResult> : IExecutionCompensation
 {

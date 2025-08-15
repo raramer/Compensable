@@ -1,6 +1,3 @@
-using System;
-using System.Threading;
-
 namespace Compensable;
 
 public sealed partial class Compensator
