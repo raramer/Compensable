@@ -1,68 +1,67 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace Compensable
+namespace Compensable;
+
+partial class AsyncCompensator
 {
-    partial class AsyncCompensator
+    private async Task ExecuteAsync(Action validation, Func<Task> execution)
     {
-        private async Task ExecuteAsync(Action validation, Func<Task> execution)
+        VerifyCanExecute();
+
+        try
         {
-            VerifyCanExecute();
+            validation?.Invoke();
+
+            await _executionLock.WaitAsync(_cancellationToken).ConfigureAwait(false);
 
             try
             {
-                validation?.Invoke();
+                VerifyCanExecute();
 
-                await _executionLock.WaitAsync(_cancellationToken).ConfigureAwait(false);
-
-                try
-                {
-                    VerifyCanExecute();
-
-                    await execution().ConfigureAwait(false);
-                }
-                catch
-                {
-                    await SetStatusAsync(CompensatorStatus.FailedToExecute).ConfigureAwait(false);
-                    throw;
-                }
-                finally
-                {
-                    _executionLock.Release();
-                }
+                await execution().ConfigureAwait(false);
             }
-            catch (Exception whileExecuting)
+            catch
             {
-                await CompensateAsync(whileExecuting).ConfigureAwait(false);
+                await SetStatusAsync(CompensatorStatus.FailedToExecute).ConfigureAwait(false);
                 throw;
             }
+            finally
+            {
+                _executionLock.Release();
+            }
         }
-
-        #region Execution Overloads
-        private async Task ExecuteAsync(Action execution)
-            => await ExecuteAsync(default(Action), execution.Awaitable()).ConfigureAwait(false);
-        #endregion
-
-        #region Execution -> TResult Overloads
-        private async Task<TResult> ExecuteAsync<TResult>(Func<TResult> execution)
-            => await ExecuteAsync<TResult>(default(Action), execution.Awaitable()).ConfigureAwait(false);
-        #endregion
-
-        #region Validation + Execution Overloads
-        private async Task ExecuteAsync(Action validation, Action execution)
-            => await ExecuteAsync(validation, execution.Awaitable()).ConfigureAwait(false);
-        #endregion
-
-        #region Validation + Execution -> TResult Overloads
-        private async Task<TResult> ExecuteAsync<TResult>(Action validation, Func<Task<TResult>> execution)
+        catch (Exception whileExecuting)
         {
-            var result = default(TResult);
-            await ExecuteAsync(validation, async () => 
-            { 
-                result = await execution().ConfigureAwait(false); 
-            }).ConfigureAwait(false);
-            return result;
+            await CompensateAsync(whileExecuting).ConfigureAwait(false);
+            throw;
         }
-        #endregion
     }
+
+    #region Execution Overloads
+    private async Task ExecuteAsync(Action execution)
+        => await ExecuteAsync(default(Action), execution.Awaitable()).ConfigureAwait(false);
+    #endregion
+
+    #region Execution -> TResult Overloads
+    private async Task<TResult> ExecuteAsync<TResult>(Func<TResult> execution)
+        => await ExecuteAsync<TResult>(default(Action), execution.Awaitable()).ConfigureAwait(false);
+    #endregion
+
+    #region Validation + Execution Overloads
+    private async Task ExecuteAsync(Action validation, Action execution)
+        => await ExecuteAsync(validation, execution.Awaitable()).ConfigureAwait(false);
+    #endregion
+
+    #region Validation + Execution -> TResult Overloads
+    private async Task<TResult> ExecuteAsync<TResult>(Action validation, Func<Task<TResult>> execution)
+    {
+        var result = default(TResult);
+        await ExecuteAsync(validation, async () => 
+        { 
+            result = await execution().ConfigureAwait(false); 
+        }).ConfigureAwait(false);
+        return result;
+    }
+    #endregion
 }

@@ -1,6 +1,5 @@
-﻿namespace Compensable
+﻿namespace Compensable;
+
+internal interface IExecutionCompensation
 {
-    internal interface IExecutionCompensation
-    {
-    }
 }
