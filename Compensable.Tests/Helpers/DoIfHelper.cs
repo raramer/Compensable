@@ -68,7 +68,7 @@ public class DoIfHelper : DoHelper
     }
     private async Task<bool> _TestAsync()
     {
-        await Task.Delay(1).ConfigureAwait(false);
+        await Task.Delay(1);
         return _Test();
     }
 }

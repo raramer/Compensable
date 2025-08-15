@@ -91,7 +91,7 @@ public class GetHelper : ExecuteCompensateHelperBase
             CompensationCalledWithResult = false;
 
             // call actual compensation
-            await actualCompensation().ConfigureAwait(false);
+            await actualCompensation();
         }
         catch
         {
@@ -122,7 +122,7 @@ public class GetHelper : ExecuteCompensateHelperBase
     }
     private async Task _CompensateAsync(object result)
     {
-        await Task.Delay(1).ConfigureAwait(false);
+        await Task.Delay(1);
         _Compensate(result);
     }
 
@@ -135,7 +135,7 @@ public class GetHelper : ExecuteCompensateHelperBase
     }
     private async Task<object> _ExecuteAsync()
     {
-        await Task.Delay(1).ConfigureAwait(false);
+        await Task.Delay(1);
         return _Execute();
     }
 }

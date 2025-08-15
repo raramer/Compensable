@@ -128,7 +128,7 @@ public class ItemHelper : ExecuteCompensateHelperBase
             CompensationCalledWithItem = false;
 
             // call actual compensation
-            await actualCompensation().ConfigureAwait(false);
+            await actualCompensation();
         }
         catch
         {

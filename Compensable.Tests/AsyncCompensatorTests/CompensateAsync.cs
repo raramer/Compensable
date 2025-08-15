@@ -10,16 +10,16 @@ public class CompensateAsync : TestBase
         // arrange
         var compensator = new AsyncCompensator();
 
-        var arrangedTagsAndCompensations = await ArrangeTagsAndCompensationsAsync(compensator).ConfigureAwait(false);
+        var arrangedTagsAndCompensations = await ArrangeTagsAndCompensationsAsync(compensator);
         var arrangedTag = arrangedTagsAndCompensations.OfType<Tag>().Skip(3).First();
 
         var addCompensationHelper = new AddCompensationHelper(CompensationOptions.ExpectToBeCalledAndThrowException);
-        await compensator.AddCompensationAsync(addCompensationHelper.CompensateAsync, arrangedTag).ConfigureAwait(false);
+        await compensator.AddCompensationAsync(addCompensationHelper.CompensateAsync, arrangedTag);
 
         // act
         var exception = await Assert.ThrowsAsync<CompensationException>(async () =>
-            await compensator.CompensateAsync().ConfigureAwait(false)
-        ).ConfigureAwait(false);
+            await compensator.CompensateAsync()
+        );
 
         // assert
         AssertCompensationException(exception, expectExecutionException: false);
@@ -32,7 +32,7 @@ public class CompensateAsync : TestBase
             .Reverse()
             .Append(addCompensationHelper)
             .Reverse()
-            .ToArray()).ConfigureAwait(false);
+            .ToArray());
     }
 
     [Fact]
@@ -41,15 +41,15 @@ public class CompensateAsync : TestBase
         // arrange
         var compensator = new AsyncCompensator();
 
-        await ArrangeTagsAndCompensationsAsync(compensator).ConfigureAwait(false);
+        await ArrangeTagsAndCompensationsAsync(compensator);
 
         // act
-        await compensator.CompensateAsync().ConfigureAwait(false);
+        await compensator.CompensateAsync();
 
         // assert
         Assert.Equal(CompensatorStatus.Compensated, compensator.Status);
 
-        await AssertInternalCompensationOrderAsync(compensator).ConfigureAwait(false);
+        await AssertInternalCompensationOrderAsync(compensator);
     }
 
     [Fact]
@@ -59,12 +59,12 @@ public class CompensateAsync : TestBase
         var compensator = new AsyncCompensator();
 
         // act
-        await compensator.CompensateAsync().ConfigureAwait(false);
+        await compensator.CompensateAsync();
 
         // assert
         Assert.Equal(CompensatorStatus.Compensated, compensator.Status);
 
-        await AssertInternalCompensationOrderAsync(compensator).ConfigureAwait(false);
+        await AssertInternalCompensationOrderAsync(compensator);
     }
 
     [Fact]
@@ -73,15 +73,15 @@ public class CompensateAsync : TestBase
         // arrange
         var compensator = new AsyncCompensator();
         var status = CompensatorStatus.Compensated;
-        await ArrangeStatusAsync(compensator, status).ConfigureAwait(false);
+        await ArrangeStatusAsync(compensator, status);
 
         // act
-        await compensator.CompensateAsync().ConfigureAwait(false);
+        await compensator.CompensateAsync();
 
         // assert
         Assert.Equal(CompensatorStatus.Compensated, compensator.Status);
 
-        await AssertInternalCompensationOrderAsync(compensator).ConfigureAwait(false);
+        await AssertInternalCompensationOrderAsync(compensator);
     }
 
     [Fact]
@@ -90,15 +90,15 @@ public class CompensateAsync : TestBase
         // arrange
         var compensator = new AsyncCompensator();
         var status = CompensatorStatus.Compensating;
-        await ArrangeStatusAsync(compensator, status).ConfigureAwait(false);
+        await ArrangeStatusAsync(compensator, status);
 
         // act
-        await compensator.CompensateAsync().ConfigureAwait(false);
+        await compensator.CompensateAsync();
 
         // assert
         Assert.Equal(CompensatorStatus.Compensated, compensator.Status);
 
-        await AssertInternalCompensationOrderAsync(compensator).ConfigureAwait(false);
+        await AssertInternalCompensationOrderAsync(compensator);
     }
 
     [Fact]
@@ -107,14 +107,14 @@ public class CompensateAsync : TestBase
         // arrange
         var compensator = new AsyncCompensator();
         var addCompensationHelper = new AddCompensationHelper(CompensationOptions.ExpectToBeCalledAndThrowException);
-        await compensator.AddCompensationAsync(addCompensationHelper.CompensateAsync).ConfigureAwait(false);
+        await compensator.AddCompensationAsync(addCompensationHelper.CompensateAsync);
         var status = CompensatorStatus.Compensating;
-        await ArrangeStatusAsync(compensator, status).ConfigureAwait(false);
+        await ArrangeStatusAsync(compensator, status);
 
         // act
         var exception = await Assert.ThrowsAsync<CompensationException>(async () =>
-            await compensator.CompensateAsync().ConfigureAwait(false)
-        ).ConfigureAwait(false);
+            await compensator.CompensateAsync()
+        );
 
         // assert
         AssertCompensationException(exception, expectExecutionException: false);
@@ -126,12 +126,12 @@ public class CompensateAsync : TestBase
         // arrange
         var compensator = new AsyncCompensator();
         var status = CompensatorStatus.FailedToCompensate;
-        await ArrangeStatusAsync(compensator, status).ConfigureAwait(false);
+        await ArrangeStatusAsync(compensator, status);
 
         // act
         var exception = await Assert.ThrowsAsync<CompensatorStatusException>(async () =>
-            await compensator.CompensateAsync().ConfigureAwait(false)
-        ).ConfigureAwait(false);
+            await compensator.CompensateAsync()
+        );
 
         // assert
         Assert.Equal(ExpectedMessages.CompensatorStatusIs(status), exception.Message);
@@ -143,15 +143,15 @@ public class CompensateAsync : TestBase
         // arrange
         var compensator = new AsyncCompensator();
         var status = CompensatorStatus.FailedToExecute;
-        await ArrangeStatusAsync(compensator, status).ConfigureAwait(false);
+        await ArrangeStatusAsync(compensator, status);
 
         // act
-        await compensator.CompensateAsync().ConfigureAwait(false);
+        await compensator.CompensateAsync();
 
         // assert
         Assert.Equal(CompensatorStatus.Compensated, compensator.Status);
 
-        await AssertInternalCompensationOrderAsync(compensator).ConfigureAwait(false);
+        await AssertInternalCompensationOrderAsync(compensator);
     }
 
     [Fact]
@@ -160,14 +160,14 @@ public class CompensateAsync : TestBase
         // arrange
         var compensator = new AsyncCompensator();
         var addCompensationHelper = new AddCompensationHelper(CompensationOptions.ExpectToBeCalledAndThrowException);
-        await compensator.AddCompensationAsync(addCompensationHelper.CompensateAsync).ConfigureAwait(false);
+        await compensator.AddCompensationAsync(addCompensationHelper.CompensateAsync);
         var status = CompensatorStatus.FailedToExecute;
-        await ArrangeStatusAsync(compensator, status).ConfigureAwait(false);
+        await ArrangeStatusAsync(compensator, status);
 
         // act
         var exception = await Assert.ThrowsAsync<CompensationException>(async () =>
-            await compensator.CompensateAsync().ConfigureAwait(false)
-        ).ConfigureAwait(false);
+            await compensator.CompensateAsync()
+        );
 
         // assert
         AssertCompensationException(exception, expectExecutionException: false);

@@ -77,7 +77,7 @@ public class ForeachHelper : HelperBase
     }
     private async Task _CompensateAsync(object item)
     {
-        await Task.Delay(1).ConfigureAwait(false);
+        await Task.Delay(1);
         _Compensate(item);
     }
 
@@ -95,7 +95,7 @@ public class ForeachHelper : HelperBase
 
     private async Task _ExecuteAsync(object item)
     {
-        await Task.Delay(1).ConfigureAwait(false);
+        await Task.Delay(1);
         _Execute(item);
     }
 }
