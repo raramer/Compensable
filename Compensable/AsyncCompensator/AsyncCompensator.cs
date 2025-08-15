@@ -1,8 +1,4 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace Compensable;
+﻿namespace Compensable;
 
 public sealed partial class AsyncCompensator
 {

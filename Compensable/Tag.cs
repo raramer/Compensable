@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Compensable;
+﻿namespace Compensable;
 
 public sealed class Tag
 {

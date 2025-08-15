@@ -1,5 +1,3 @@
-﻿using System;
-
-namespace Compensable;
+﻿namespace Compensable;
 
 public class TagNotFoundException() : Exception("Tag not found");

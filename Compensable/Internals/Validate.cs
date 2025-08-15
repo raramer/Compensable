@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Compensable;
+﻿namespace Compensable;
 
 internal static class Validate
 {

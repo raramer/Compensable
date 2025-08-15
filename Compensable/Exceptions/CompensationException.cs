@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Compensable;
+﻿namespace Compensable;
 
 public class CompensationException(Exception whileCompensating, Exception whileExecuting) : Exception(
     message: whileExecuting is null

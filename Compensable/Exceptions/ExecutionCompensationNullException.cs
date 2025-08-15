@@ -1,5 +1,3 @@
-﻿using System;
-
-namespace Compensable;
+﻿namespace Compensable;
 
 public class ExecutionCompensationNullException() : Exception("Execution's response compensation cannot be null.");
