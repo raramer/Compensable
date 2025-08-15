@@ -15,7 +15,7 @@ internal sealed class CompensationStack<TCompensation> where TCompensation : Del
     {
         Validate.Compensation(compensation);
 
-        if (compensateAtTag == null)
+        if (compensateAtTag is null)
         {
             // create compensation stack
             var compensations = new ConcurrentStack<TCompensation>();
@@ -84,7 +84,7 @@ internal sealed class CompensationStack<TCompensation> where TCompensation : Del
 
     internal void ValidateTag(Tag tag)
     {
-        if (tag != null && !_taggedCompensations.Any(c => c.Tag == tag))
+        if (tag is not null && !_taggedCompensations.Any(c => c.Tag == tag))
             throw new TagNotFoundException();
     }
 }

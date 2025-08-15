@@ -4,7 +4,7 @@ public sealed class Compensation : IExecutionCompensation
 {
     private readonly Action _compensation;
 
-    internal bool HasCompensation => _compensation != null;
+    internal bool HasCompensation => _compensation is not null;
 
     public Compensation(Action compensation)
     {

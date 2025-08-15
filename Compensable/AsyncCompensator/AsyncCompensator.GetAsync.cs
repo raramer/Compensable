@@ -22,7 +22,7 @@ partial class AsyncCompensator
             {
                 var result = await execution().ConfigureAwait(false);
 
-                if (compensation != null)
+                if (compensation is not null)
                     _compensationStack.AddCompensation(async () => await compensation(result).ConfigureAwait(false), compensateAtTag);
 
                 return result;

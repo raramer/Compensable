@@ -29,7 +29,7 @@ partial class Compensator
 
                     execution(item);
 
-                    if (compensation != null)
+                    if (compensation is not null)
                         _compensationStack.AddCompensation(() => compensation(item), compensateAtTag);
                 }
             });

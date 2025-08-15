@@ -4,7 +4,7 @@ public sealed class AsyncCompensation<TResult> : IExecutionCompensation
 {
     private readonly Func<Task> _compensation;
 
-    internal bool HasCompensation => _compensation != null;
+    internal bool HasCompensation => _compensation is not null;
 
     public TResult Result { get; }
 
@@ -17,7 +17,7 @@ public sealed class AsyncCompensation<TResult> : IExecutionCompensation
     public AsyncCompensation(TResult result, Action<TResult> compensation)
     {
         Result = result;
-        _compensation = compensation == null
+        _compensation = compensation is null
             ? default(Func<Task>)
             : () =>
             {
@@ -35,8 +35,8 @@ public sealed class AsyncCompensation<TResult> : IExecutionCompensation
     public AsyncCompensation(TResult result, Func<TResult, Task> compensation)
     {
         Result = result;
-        _compensation = compensation == null 
-            ? default(Func<Task>) 
+        _compensation = compensation is null
+            ? default(Func<Task>)
             : async () => await compensation(result).ConfigureAwait(false);
     }
 
