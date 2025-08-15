@@ -42,7 +42,7 @@ public class AddCompensationHelper : CompensateHelperBase
     }
     private async Task _CompensateAsync()
     {
-        await Task.Delay(1).ConfigureAwait(false);
+        await Task.Delay(1);
         _Compensate();
     }
 }

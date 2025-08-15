@@ -8,7 +8,7 @@ public class Status : TestBase
         // arrange
         var compensator = new AsyncCompensator();
         var status = CompensatorStatus.FailedToCompensate;
-        await ArrangeStatusAsync(compensator, status).ConfigureAwait(false);
+        await ArrangeStatusAsync(compensator, status);
 
         // assert
         Assert.Equal(status, compensator.Status);
@@ -20,7 +20,7 @@ public class Status : TestBase
         // arrange
         var compensator = new AsyncCompensator();
         var status = CompensatorStatus.Compensating;
-        await ArrangeStatusAsync(compensator, status).ConfigureAwait(false);
+        await ArrangeStatusAsync(compensator, status);
 
         // assert
         Assert.Equal(status, compensator.Status);
@@ -42,7 +42,7 @@ public class Status : TestBase
         // arrange
         var compensator = new AsyncCompensator();
         var status = CompensatorStatus.FailedToExecute;
-        await ArrangeStatusAsync(compensator, status).ConfigureAwait(false);
+        await ArrangeStatusAsync(compensator, status);
 
         // assert
         Assert.Equal(status, compensator.Status);
@@ -54,7 +54,7 @@ public class Status : TestBase
         // arrange
         var compensator = new AsyncCompensator();
         var status = CompensatorStatus.Compensated;
-        await ArrangeStatusAsync(compensator, status).ConfigureAwait(false);
+        await ArrangeStatusAsync(compensator, status);
 
         // assert
         Assert.Equal(status, compensator.Status);

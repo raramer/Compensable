@@ -7,15 +7,15 @@ public class DoIfAsync : TestBase
     {
         // arrange
         var compensator = new AsyncCompensator();
-        var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
+        var tag = await compensator.CreateTagAsync();
 
         var doIfHelper = new DoIfHelper(CompensationOptions.ExpectToBeCalledAndThrowException);
-        await compensator.DoIfAsync(doIfHelper.TestAsync, doIfHelper.ExecuteAsync, doIfHelper.CompensateAsync, tag).ConfigureAwait(false);
+        await compensator.DoIfAsync(doIfHelper.TestAsync, doIfHelper.ExecuteAsync, doIfHelper.CompensateAsync, tag);
 
         // act
         var exception = await Assert.ThrowsAsync<CompensationException>(async () =>
-            await compensator.CompensateAsync().ConfigureAwait(false)
-        ).ConfigureAwait(false);
+            await compensator.CompensateAsync()
+        );
 
         // assert
         AssertCompensationException(exception, expectExecutionException: false);
@@ -24,7 +24,7 @@ public class DoIfAsync : TestBase
 
         AssertHelpers(doIfHelper);
 
-        await AssertInternalCompensationOrderAsync(compensator, doIfHelper).ConfigureAwait(false);
+        await AssertInternalCompensationOrderAsync(compensator, doIfHelper);
     }
 
     [Fact]
@@ -32,19 +32,19 @@ public class DoIfAsync : TestBase
     {
         // arrange
         var compensator = new AsyncCompensator();
-        var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
+        var tag = await compensator.CreateTagAsync();
 
         var doIfHelper = new DoIfHelper(CompensationOptions.Null);
 
         // act
-        await compensator.DoIfAsync(doIfHelper.TestAsync, doIfHelper.ExecuteAsync, doIfHelper.CompensateAsync, tag).ConfigureAwait(false);
+        await compensator.DoIfAsync(doIfHelper.TestAsync, doIfHelper.ExecuteAsync, doIfHelper.CompensateAsync, tag);
 
         // assert
         Assert.Equal(CompensatorStatus.Executing, compensator.Status);
 
         AssertHelpers(doIfHelper);
 
-        await AssertInternalCompensationOrderAsync(compensator).ConfigureAwait(false);
+        await AssertInternalCompensationOrderAsync(compensator);
     }
 
     [Fact]
@@ -52,19 +52,19 @@ public class DoIfAsync : TestBase
     {
         // arrange
         var compensator = new AsyncCompensator();
-        var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
+        var tag = await compensator.CreateTagAsync();
 
         var doIfHelper = new DoIfHelper(CompensationOptions.WouldThrowExceptionButNotCalled);
 
         // act
-        await compensator.DoIfAsync(doIfHelper.TestAsync, doIfHelper.ExecuteAsync, doIfHelper.CompensateAsync, tag).ConfigureAwait(false);
+        await compensator.DoIfAsync(doIfHelper.TestAsync, doIfHelper.ExecuteAsync, doIfHelper.CompensateAsync, tag);
 
         // assert
         Assert.Equal(CompensatorStatus.Executing, compensator.Status);
 
         AssertHelpers(doIfHelper);
 
-        await AssertInternalCompensationOrderAsync(compensator, doIfHelper).ConfigureAwait(false);
+        await AssertInternalCompensationOrderAsync(compensator, doIfHelper);
     }
 
     [Fact]
@@ -72,14 +72,14 @@ public class DoIfAsync : TestBase
     {
         // arrange
         var compensator = new AsyncCompensator();
-        var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
+        var tag = await compensator.CreateTagAsync();
 
         var doIfHelper = new DoIfHelper(ExecutionOptions.ExpectToBeCalledAndThrowException);
 
         // act
         var exception = await Assert.ThrowsAsync<HelperExecutionException>(async () =>
-            await compensator.DoIfAsync(doIfHelper.TestAsync, doIfHelper.ExecuteAsync, doIfHelper.CompensateAsync, tag).ConfigureAwait(false)
-        ).ConfigureAwait(false);
+            await compensator.DoIfAsync(doIfHelper.TestAsync, doIfHelper.ExecuteAsync, doIfHelper.CompensateAsync, tag)
+        );
 
         // assert
         Assert.Equal(ExpectedMessages.ExecuteFailed, exception.Message);
@@ -88,7 +88,7 @@ public class DoIfAsync : TestBase
 
         AssertHelpers(doIfHelper);
 
-        await AssertInternalCompensationOrderAsync(compensator).ConfigureAwait(false);
+        await AssertInternalCompensationOrderAsync(compensator);
     }
 
     [Fact]
@@ -96,14 +96,14 @@ public class DoIfAsync : TestBase
     {
         // arrange
         var compensator = new AsyncCompensator();
-        var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
+        var tag = await compensator.CreateTagAsync();
 
         var doIfHelper = new DoIfHelper(ExecutionOptions.Null);
 
         // act
         var exception = await Assert.ThrowsAsync<ArgumentNullException>(async () =>
-            await compensator.DoIfAsync(doIfHelper.TestAsync, doIfHelper.ExecuteAsync, doIfHelper.CompensateAsync, tag).ConfigureAwait(false)
-        ).ConfigureAwait(false);
+            await compensator.DoIfAsync(doIfHelper.TestAsync, doIfHelper.ExecuteAsync, doIfHelper.CompensateAsync, tag)
+        );
 
         // assert
         Assert.Equal(ExpectedMessages.ValueCannotBeNull("execution"), exception.Message);
@@ -112,7 +112,7 @@ public class DoIfAsync : TestBase
 
         AssertHelpers(doIfHelper);
 
-        await AssertInternalCompensationOrderAsync(compensator).ConfigureAwait(false);
+        await AssertInternalCompensationOrderAsync(compensator);
     }
 
     [Fact]
@@ -120,19 +120,19 @@ public class DoIfAsync : TestBase
     {
         // arrange
         var compensator = new AsyncCompensator();
-        var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
+        var tag = await compensator.CreateTagAsync();
 
         var doIfHelper = new DoIfHelper();
 
         // act
-        await compensator.DoIfAsync(doIfHelper.TestAsync, doIfHelper.ExecuteAsync, doIfHelper.CompensateAsync, tag).ConfigureAwait(false);
+        await compensator.DoIfAsync(doIfHelper.TestAsync, doIfHelper.ExecuteAsync, doIfHelper.CompensateAsync, tag);
 
         // assert
         Assert.Equal(CompensatorStatus.Executing, compensator.Status);
 
         AssertHelpers(doIfHelper);
 
-        await AssertInternalCompensationOrderAsync(compensator, doIfHelper).ConfigureAwait(false);
+        await AssertInternalCompensationOrderAsync(compensator, doIfHelper);
     }
 
     [Fact]
@@ -140,16 +140,16 @@ public class DoIfAsync : TestBase
     {
         // arrange
         var compensator = new AsyncCompensator();
-        var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
+        var tag = await compensator.CreateTagAsync();
         var status = CompensatorStatus.Compensated;
-        await ArrangeStatusAsync(compensator, status).ConfigureAwait(false);
+        await ArrangeStatusAsync(compensator, status);
 
         var doIfHelper = new DoIfHelper(TestOptions.WouldSucceedButNotCalled);
 
         // act
         var exception = await Assert.ThrowsAsync<CompensatorStatusException>(async () =>
-            await compensator.DoIfAsync(doIfHelper.TestAsync, doIfHelper.ExecuteAsync, doIfHelper.CompensateAsync, tag).ConfigureAwait(false)
-        ).ConfigureAwait(false);
+            await compensator.DoIfAsync(doIfHelper.TestAsync, doIfHelper.ExecuteAsync, doIfHelper.CompensateAsync, tag)
+        );
 
         // assert
         Assert.Equal(ExpectedMessages.CompensatorStatusIs(status), exception.Message);
@@ -162,16 +162,16 @@ public class DoIfAsync : TestBase
     {
         // arrange
         var compensator = new AsyncCompensator();
-        var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
+        var tag = await compensator.CreateTagAsync();
         var status = CompensatorStatus.Compensating;
-        await ArrangeStatusAsync(compensator, status).ConfigureAwait(false);
+        await ArrangeStatusAsync(compensator, status);
 
         var doIfHelper = new DoIfHelper(TestOptions.WouldSucceedButNotCalled);
 
         // act
         var exception = await Assert.ThrowsAsync<CompensatorStatusException>(async () =>
-            await compensator.DoIfAsync(doIfHelper.TestAsync, doIfHelper.ExecuteAsync, doIfHelper.CompensateAsync, tag).ConfigureAwait(false)
-        ).ConfigureAwait(false);
+            await compensator.DoIfAsync(doIfHelper.TestAsync, doIfHelper.ExecuteAsync, doIfHelper.CompensateAsync, tag)
+        );
 
         // assert
         Assert.Equal(ExpectedMessages.CompensatorStatusIs(status), exception.Message);
@@ -184,16 +184,16 @@ public class DoIfAsync : TestBase
     {
         // arrange
         var compensator = new AsyncCompensator();
-        var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
+        var tag = await compensator.CreateTagAsync();
         var status = CompensatorStatus.FailedToCompensate;
-        await ArrangeStatusAsync(compensator, status).ConfigureAwait(false);
+        await ArrangeStatusAsync(compensator, status);
 
         var doIfHelper = new DoIfHelper(TestOptions.WouldSucceedButNotCalled);
 
         // act
         var exception = await Assert.ThrowsAsync<CompensatorStatusException>(async () =>
-            await compensator.DoIfAsync(doIfHelper.TestAsync, doIfHelper.ExecuteAsync, doIfHelper.CompensateAsync, tag).ConfigureAwait(false)
-        ).ConfigureAwait(false);
+            await compensator.DoIfAsync(doIfHelper.TestAsync, doIfHelper.ExecuteAsync, doIfHelper.CompensateAsync, tag)
+        );
 
         // assert
         Assert.Equal(ExpectedMessages.CompensatorStatusIs(status), exception.Message);
@@ -206,16 +206,16 @@ public class DoIfAsync : TestBase
     {
         // arrange
         var compensator = new AsyncCompensator();
-        var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
+        var tag = await compensator.CreateTagAsync();
         var status = CompensatorStatus.FailedToExecute;
-        await ArrangeStatusAsync(compensator, status).ConfigureAwait(false);
+        await ArrangeStatusAsync(compensator, status);
 
         var doIfHelper = new DoIfHelper(TestOptions.WouldSucceedButNotCalled);
 
         // act
         var exception = await Assert.ThrowsAsync<CompensatorStatusException>(async () =>
-            await compensator.DoIfAsync(doIfHelper.TestAsync, doIfHelper.ExecuteAsync, doIfHelper.CompensateAsync, tag).ConfigureAwait(false)
-        ).ConfigureAwait(false);
+            await compensator.DoIfAsync(doIfHelper.TestAsync, doIfHelper.ExecuteAsync, doIfHelper.CompensateAsync, tag)
+        );
 
         // assert
         Assert.Equal(ExpectedMessages.CompensatorStatusIs(status), exception.Message);
@@ -228,15 +228,15 @@ public class DoIfAsync : TestBase
     {
         // arrange
         var compensator = new AsyncCompensator();
-        var unusedTag = await compensator.CreateTagAsync().ConfigureAwait(false);
+        var unusedTag = await compensator.CreateTagAsync();
 
         var doIfHelper = new DoIfHelper(TestOptions.WouldSucceedButNotCalled);
         var tag = new Tag();
 
         // act
         var exception = await Assert.ThrowsAsync<TagNotFoundException>(async () =>
-            await compensator.DoIfAsync(doIfHelper.TestAsync, doIfHelper.ExecuteAsync, doIfHelper.CompensateAsync, tag).ConfigureAwait(false)
-        ).ConfigureAwait(false);
+            await compensator.DoIfAsync(doIfHelper.TestAsync, doIfHelper.ExecuteAsync, doIfHelper.CompensateAsync, tag)
+        );
 
         // assert
         Assert.Equal(ExpectedMessages.TagNotFound, exception.Message);
@@ -245,7 +245,7 @@ public class DoIfAsync : TestBase
 
         AssertHelpers(doIfHelper);
 
-        await AssertInternalCompensationOrderAsync(compensator).ConfigureAwait(false);
+        await AssertInternalCompensationOrderAsync(compensator);
     }
 
     [Fact]
@@ -253,20 +253,20 @@ public class DoIfAsync : TestBase
     {
         // arrange
         var compensator = new AsyncCompensator();
-        var unusedTag = await compensator.CreateTagAsync().ConfigureAwait(false);
+        var unusedTag = await compensator.CreateTagAsync();
 
         var doIfHelper = new DoIfHelper();
         var tag = default(Tag);
 
         // act
-        await compensator.DoIfAsync(doIfHelper.TestAsync, doIfHelper.ExecuteAsync, doIfHelper.CompensateAsync, tag).ConfigureAwait(false);
+        await compensator.DoIfAsync(doIfHelper.TestAsync, doIfHelper.ExecuteAsync, doIfHelper.CompensateAsync, tag);
 
         // assert
         Assert.Equal(CompensatorStatus.Executing, compensator.Status);
 
         AssertHelpers(doIfHelper);
 
-        await AssertInternalCompensationOrderAsync(compensator, doIfHelper).ConfigureAwait(false);
+        await AssertInternalCompensationOrderAsync(compensator, doIfHelper);
     }
 
     [Fact]
@@ -274,14 +274,14 @@ public class DoIfAsync : TestBase
     {
         // arrange
         var compensator = new AsyncCompensator();
-        var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
+        var tag = await compensator.CreateTagAsync();
 
         var doIfHelper = new DoIfHelper(TestOptions.ShouldBeCalledAndThrowException);
 
         // act
         var exception = await Assert.ThrowsAsync<HelperTestException>(async () =>
-            await compensator.DoIfAsync(doIfHelper.TestAsync, doIfHelper.ExecuteAsync, doIfHelper.CompensateAsync, tag).ConfigureAwait(false)
-        ).ConfigureAwait(false);
+            await compensator.DoIfAsync(doIfHelper.TestAsync, doIfHelper.ExecuteAsync, doIfHelper.CompensateAsync, tag)
+        );
 
         // assert
         Assert.Equal(ExpectedMessages.TestFailed, exception.Message);
@@ -290,7 +290,7 @@ public class DoIfAsync : TestBase
 
         AssertHelpers(doIfHelper);
 
-        await AssertInternalCompensationOrderAsync(compensator).ConfigureAwait(false);
+        await AssertInternalCompensationOrderAsync(compensator);
     }
 
     [Fact]
@@ -298,14 +298,14 @@ public class DoIfAsync : TestBase
     {
         // arrange
         var compensator = new AsyncCompensator();
-        var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
+        var tag = await compensator.CreateTagAsync();
 
         var doIfHelper = new DoIfHelper(TestOptions.Null);
 
         // act
         var exception = await Assert.ThrowsAsync<ArgumentNullException>(async () =>
-            await compensator.DoIfAsync(doIfHelper.TestAsync, doIfHelper.ExecuteAsync, doIfHelper.CompensateAsync, tag).ConfigureAwait(false)
-        ).ConfigureAwait(false);
+            await compensator.DoIfAsync(doIfHelper.TestAsync, doIfHelper.ExecuteAsync, doIfHelper.CompensateAsync, tag)
+        );
 
         // assert
         Assert.Equal(ExpectedMessages.ValueCannotBeNull("test"), exception.Message);
@@ -314,7 +314,7 @@ public class DoIfAsync : TestBase
 
         AssertHelpers(doIfHelper);
 
-        await AssertInternalCompensationOrderAsync(compensator).ConfigureAwait(false);
+        await AssertInternalCompensationOrderAsync(compensator);
     }
 
     [Fact]
@@ -322,18 +322,18 @@ public class DoIfAsync : TestBase
     {
         // arrange
         var compensator = new AsyncCompensator();
-        var tag = await compensator.CreateTagAsync().ConfigureAwait(false);
+        var tag = await compensator.CreateTagAsync();
 
         var doIfHelper = new DoIfHelper(TestOptions.ShouldBeCalledAndReturnFalse);
 
         // act
-        await compensator.DoIfAsync(doIfHelper.TestAsync, doIfHelper.ExecuteAsync, doIfHelper.CompensateAsync, tag).ConfigureAwait(false);
+        await compensator.DoIfAsync(doIfHelper.TestAsync, doIfHelper.ExecuteAsync, doIfHelper.CompensateAsync, tag);
 
         // assert
         Assert.Equal(CompensatorStatus.Executing, compensator.Status);
 
         AssertHelpers(doIfHelper);
 
-        await AssertInternalCompensationOrderAsync(compensator).ConfigureAwait(false);
+        await AssertInternalCompensationOrderAsync(compensator);
     }
 }

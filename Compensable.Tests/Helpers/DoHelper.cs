@@ -66,7 +66,7 @@ public class DoHelper : ExecuteCompensateHelperBase
     }
     private async Task _CompensateAsync()
     {
-        await Task.Delay(1).ConfigureAwait(false);
+        await Task.Delay(1);
         _Compensate();
     }
 
@@ -80,7 +80,7 @@ public class DoHelper : ExecuteCompensateHelperBase
 
     private async Task _ExecuteAsync()
     {
-        await Task.Delay(1).ConfigureAwait(false);
+        await Task.Delay(1);
         _Execute();
     }
 }
