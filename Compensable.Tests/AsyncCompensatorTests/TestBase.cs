@@ -151,7 +151,7 @@ public abstract class TestBase
             await AssertInternalCompensationOrderAsync(compensator, expectedOrderedItems
                 .SelectMany(i => i is ForeachHelper foreachHelper
                     ? foreachHelper.GetExpectedCompensationOrder()
-                    : new[] { i })
+                    : [i])
                 .ToArray())
                 ;
             return;

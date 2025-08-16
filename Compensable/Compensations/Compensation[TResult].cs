@@ -4,7 +4,7 @@ public sealed class Compensation<TResult> : IExecutionCompensation
 {
     private Action _compensation { get; }
 
-    internal bool HasCompensation => _compensation != null;
+    internal bool HasCompensation => _compensation is not null;
 
     public TResult Result { get; }
 
@@ -17,7 +17,7 @@ public sealed class Compensation<TResult> : IExecutionCompensation
     public Compensation(TResult result, Action<TResult> compensation)
     {
         Result = result;
-        _compensation = compensation == null 
+        _compensation = compensation is null
             ? default(Action) : 
             () => compensation(result);
     }

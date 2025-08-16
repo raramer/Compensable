@@ -20,7 +20,7 @@ partial class Compensator
             {
                 execution();
 
-                if (compensation != null)
+                if (compensation is not null)
                     _compensationStack.AddCompensation(compensation, compensateAtTag);
             });
     }

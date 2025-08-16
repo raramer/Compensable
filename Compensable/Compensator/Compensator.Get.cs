@@ -22,7 +22,7 @@ partial class Compensator
             {
                 var result = execution();
 
-                if (compensation != null)
+                if (compensation is not null)
                     _compensationStack.AddCompensation(() => compensation(result), compensateAtTag);
 
                 return result;

@@ -4,7 +4,7 @@ public sealed class AsyncCompensation : IExecutionCompensation
 {
     private readonly Func<Task> _compensation;
 
-    internal bool HasCompensation => _compensation != null;
+    internal bool HasCompensation => _compensation is not null;
 
     public AsyncCompensation(Action compensation)
     {
